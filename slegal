@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if (( $# < 2 ))
+then echo "usage: legals width modulus [y [ x [ncpus [memsize [height]]]]]"; exit
+fi
+
+width=$1
+modidx=$2
+if (( $# >= 3 )); then      y=$3; else y=0; fi
+if (( $# >= 4 )); then      x=$4; else x=0; fi
+if (( $# >= 5 )); then  ncpus=$5; else ncpus=1; fi
+if (( $# >= 6 )); then  msize=$6; else msize=500M; fi
+if (( $# >= 7 )); then height=$7; else height=$width; fi
+
+obsolete=""
+tmpcpu="tmp.cpu"
+bin="/Users/tromp/go/states"
+$bin/start $width $modidx
+while ((y < height)); do
+  for (( cpu=0; cpu < ncpus; cpu++ )); do
+    nice -9 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu 2>&1 || kill -9 $$ &
+  done
+  wait
+  cat $tmpcpu*
+  rm $tmpcpu*
+  if [[ $obsolete != "" ]]; then rm state.$width.$modidx.$obsolete.*; fi
+  obsolete=$y.$x
+  ((x += 1))
+  if ((x == width)); then ((x = 0)); ((y += 1)); fi
+  date
+done
