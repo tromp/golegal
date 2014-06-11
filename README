@@ -1,0 +1,79 @@
+This set of programs computes the number of legal go positions on rectangular
+boards. They assume
+
+- a UNIX like environment
+- a 64-bit CPU
+- installed library for Judy arrays (http://judy.sourceforge.net/)
+
+The programs use dynamic programming over the relevant state
+of partial go boards.
+A partial go board up to (y,x) consistes of all the points above and to the left
+of (y,x). For example, the following depicts a partial 5x5 board up to (2,3):
+
+   0 1 2 3 4
+0  O O O O .
+1  . O X O X
+2  X O X
+
+the relevant state includes the color of all points on the bottom
+
+         O X
+   X O X
+
+and the connections between stones that have no liberties yet.
+This state is encoded as a 3*width number. So any 5xn state fits in 15 bits.
+
+The following table shows how the number of states grows with board width:
+
+ 1                3
+ 2               13
+ 3               46
+ 4              168
+ 5              642
+ 6             2482
+ 7             9808
+ 8            39324
+ 9           160286
+10           662265
+11          2772774
+12         11742926
+13         50258461
+14        217096273
+15        945567689
+16       4148642993
+17      18320946269
+18      81376671503
+19     363324268018
+
+If we know the count (number of possible partial boards) of all (y,x)-states,
+then we can compute the count of all (y,x+1)-states by considering the
+choices of making (y,x) empty, white or black.
+
+The programs use 64 bit counts, which suffices only up to 6x6. For larger
+boards, they can count modulo some number close to 2^64. By doing this
+repeatedly for a set of relatively prime moduli, we can recover the proper
+count using the chinese remainder theorem, as embodied in the Haskell program
+CRT.hs
+
+To compute L(m,n), the number of legal mxn positions,
+invoke the legals shell script as follows:
+
+nohup ./legals m modulus ncpus memsize[kKmMgG] 0 0 n
+
+where modulus is an index in the range [0..45],
+ncpus is the number of processes that will be run in parallel,
+and memsize is the amount of memory (in Kilo/Mega/Giga-byte)
+used by the Judy array in one process.
+
+The latter should be as big as possible,
+without causing swapping. This is usually around 80% +- 10% of physical
+memory size, divided by ncpus.
+Using more memory has the advantage of producing bigger,
+and hence fewer files, which reduces redundancy (reported as avg:
+the average number of files in which a state occurs).
+
+If the default filesystem buffer size is too low and causes excessive
+seeking on the disk, then one can compile with -DSETVBUF, which will
+use a buffer of size BUFSIZE (128Kbyte by default) for each inputstream.
+Making BUFSIZE too big is not advisable since there can be many
+hundreds of streams.
