@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   if (c == 'g' || c == 'G')
     msize *= 1000000000LL;
   if (msize < 1000000LL) {
-    printf("memsize %lld too small for comfort.\n", msize);
+    printf("memsize %ld too small for comfort.\n", msize);
     exit(1);
   }
 
@@ -96,15 +96,15 @@ int main(int argc, char *argv[])
   hidefiles(go, outbase, noutfiles);
 
   totin = totalread(gin);
-  printf("(%d,%d) size %llu",y,x,nin);
+  printf("(%d,%d) size %lu",y,x,nin);
   printf(" avg %1.3f mod ", totin/(double)nin);
   if (modulus)
-    printf("%llu",modulus);
+    printf("%lu",modulus);
   else printf("18446744073709551616");
 
-  printf("\nnewillegal %llu ",nnewillcnt);
-  printf(       "needy %llu ", needywritten(go));
-  printf(       "legal %llu ",legalwritten(go));
+  printf("\nnewillegal %lu ",nnewillcnt);
+  printf(       "needy %lu ", needywritten(go));
+  printf(       "legal %lu ",legalwritten(go));
   printf("at (%d,%d)\n",y+(nextx==0),nextx);
   return 0;
 }

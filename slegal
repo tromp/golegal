@@ -14,11 +14,13 @@ if (( $# >= 7 )); then height=$7; else height=$width; fi
 
 obsolete=""
 tmpcpu="tmp.cpu"
-bin="/Users/tromp/go/states"
+bin="/home/tromp/golegal"
+echo "$bin/start $width $modidx"
 $bin/start $width $modidx
 while ((y < height)); do
   for (( cpu=0; cpu < ncpus; cpu++ )); do
-    nice -9 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu 2>&1 || kill -9 $$ &
+    echo "nice -19 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu"
+    nice -19 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu 2>&1 || kill -9 $$ &
   done
   wait
   cat $tmpcpu*

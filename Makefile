@@ -1,4 +1,5 @@
 CFLAGS = -Wall -O3 -m64
+GFLAGS = -Wall -g -m64
 
 all:   	start legal tar
 
@@ -17,8 +18,11 @@ partition:	partition.c partition.h states.c states.h sortstate.c sortstate.h Mak
 legal:	legal.c instream.c instream.h outstream.c modadd.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
 	cc $(CFLAGS)  -o legal legal.c states.c sortstate.c instream.c outstream.c partition.c modadd.c
 
+legalg:	legal.c instream.c instream.h outstream.c modadd.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
+	cc $(GFLAGS)  -o legalg legal.c states.c sortstate.c instream.c outstream.c partition.c modadd.c
+
 merge:	merge.c instream.c instream.h outstream.c modadd.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
 	cc $(CFLAGS)  -o merge merge.c states.c sortstate.c instream.c outstream.c partition.c modadd.c
 
-tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
-	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
+tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs
+	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs

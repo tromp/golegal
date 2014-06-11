@@ -4,7 +4,7 @@
 #include "sortstate.h"
 #include "modadd.h"
 
-#define NPAIRPOW 11
+#define NPAIRPOW 13
 #define NBLOCKPOW (32-NPAIRPOW)
 #define NPAIRS ((1<<NPAIRPOW)-1)
 #define NILBLOCK ((1<<NBLOCKPOW)-1)

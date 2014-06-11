@@ -55,7 +55,7 @@ void setpartition(goout *go)
       go->parts[i-1] |= (uint64_t)t << (3*d);
 //printf("parts[%d]=%lld\n", i-1, parts[i-1]);
     }
-    printf("parts[%d]=%llo, off by %ld\n", i-1, go->parts[i-1], lim);
+    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], lim);
   }
 }
 

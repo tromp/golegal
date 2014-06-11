@@ -54,7 +54,7 @@ void fillbuf(goin *gin, statebuf *sb)
   delta = readdelta(sb);
   sb->state += delta;
   if (!fread(&sb->cnt,sizeof(uint64_t),1,sb->fp)) {
-    printf("failed to read state %llo count from file %s\n", sb->state, sb->fname);
+    printf("failed to read state %lo count from file %s\n", sb->state, sb->fname);
     exit(1);
   }
   modadd(gin->modulus, &sb->cumcnt, sb->cnt);
@@ -66,7 +66,7 @@ void fillbuf(goin *gin, statebuf *sb)
     }
     sb->fp = NULL;
     if (sb->cumcnt) {
-      printf("file %s corrupt; cumcnt=%llu\n", sb->fname, sb->cumcnt);
+      printf("file %s corrupt; cumcnt=%lu\n", sb->fname, sb->cumcnt);
       exit(1);
     }
   } else gin->totalin++;
