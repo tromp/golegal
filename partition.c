@@ -128,7 +128,7 @@ uint64_t bordercnt(int len, int bmp)
   borderlen = len;
   bump = bmp;
   keybits = 8+(len/2);
-  size = 1000000;
+  size = 2000000;
   order = jtalloc(size,0LL,4);
   sb.state = STARTBORDER; sb.cnt = 1LL;
   jtinsert(order,&sb);

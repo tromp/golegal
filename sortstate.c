@@ -4,7 +4,7 @@
 #include "sortstate.h"
 #include "modadd.h"
 
-#define NPAIRPOW 13
+#define NPAIRPOW 11
 #define NBLOCKPOW (32-NPAIRPOW)
 #define NPAIRS ((1<<NPAIRPOW)-1)
 #define NILBLOCK ((1<<NBLOCKPOW)-1)
@@ -49,8 +49,17 @@ jtset *jtalloc(long nbytes, uint64_t mod, int locbits)
   nlocators = 1<<locbits;
   jts->locmask = nlocators-1;
   jts->nblocks = nbytes/sizeof(stateblock);
+  // nlocations << memory/sizeof(stateblock) < NILBLOCK
+  // 2^LOCBITS << memory/(NPAIRS*16) < 2^(32-NPAIRPOW)
+  // 2^LOCBITS << memory/(2^NPAIRPOW+4) < 2^(32-NPAIRPOW)
+  // LOCBITS < log_memory-NPAIRPOW-4 < 32-NPAIRPOW
+  // LOCBITS+NPAIRPOW+4 < log_memory &&  memory < 64G
+  if (jts->nblocks >= NILBLOCK) {
+    printf("nblocks (%d) must be less than NILBLOCK (%d)\n", jts->nblocks,NILBLOCK);
+    exit(1);
+  }
   if (jts->nblocks < nlocators) {
-    printf("fewer blocks (%d) than locators (%d); use more memory\n", jts->nblocks,nlocators);
+    printf("nblocks (%d) must be more than locators (%d)\n", jts->nblocks,nlocators);
     exit(1);
   }
   jts->thrblocks = 4*jts->nblocks/5;
