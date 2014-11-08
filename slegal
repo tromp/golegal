@@ -16,11 +16,11 @@ obsolete=""
 tmpcpu="tmp.cpu"
 bin="/home/tromp/golegal"
 echo "$bin/start $width $modidx"
-$bin/start $width $modidx
+if ((x == 0 && y == 0)); then $bin/start $width $modidx; fi
 while ((y < height)); do
   for (( cpu=0; cpu < ncpus; cpu++ )); do
-    echo "nice -19 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu"
-    nice -19 time $bin/legal $width $modidx $y $x $ncpus $cpu $msize 1>$tmpcpu$cpu 2>&1 || kill -9 $$ &
+    echo "time $bin/legal $width $modidx $y $x $ncpus $cpu $msize &> $tmpcpu$cpu"
+          time $bin/legal $width $modidx $y $x $ncpus $cpu $msize &> $tmpcpu$cpu || kill -9 $$ &
   done
   wait
   cat $tmpcpu*
