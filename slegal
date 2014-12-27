@@ -11,7 +11,7 @@ if (( $# >= 4 )); then      x=$4; else x=0; fi
 if (( $# >= 5 )); then  ncpus=$5; else ncpus=1; fi
 if (( $# >= 6 )); then  msize=$6; else msize=500M; fi
 if (( $# >= 7 )); then height=$7; else height=$width; fi
-if (( $# >= 8 )); then keep  =$8; else keep=0; fi
+if (( $# >= 8 )); then   keep=$8; else keep=0; fi
 
 obsolete=""
 tmpcpu="tmp.cpu"
@@ -27,7 +27,7 @@ while ((y < height)); do
   cat $tmpcpu*
   rm $tmpcpu*
   if [[ $obsolete != "" ]]; then rm state.$width.$modidx.$obsolete.*; fi
-  if (( $keep == 0 || $x != 0 )); then obsolete=$y.$x; else obsolete=""; fi
+  if (( keep == 0 || x != 0 )); then obsolete=$y.$x; else obsolete=""; fi
   ((x += 1))
   if ((x == width)); then ((x = 0)); ((y += 1)); fi
   date
