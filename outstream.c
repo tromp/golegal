@@ -30,32 +30,41 @@ struct goout {
 
 void setpartition(goout *go)
 {
-  int i,d,t;
-  long delta,size,lim,tot;
+  int i,dmin,d,t;
+  long size,part,cum,lim,tot;
 
   go->parts[go->ncpus-1] = FINALSTATE;
   if (go->ncpus == 1)
     return;
   allowall();
   tot = bordercnt(go->width,go->bump);
-  delta = tot/(20*go->ncpus); // 5 % of per-cpu workload
-  for (i=1; i<go->ncpus; i++) {
+  dmin = go->width*2/3;
+  // delta = tot/(20*go->ncpus); // 2 % of per-cpu workload
+  // if (delta < 1) delta = 1;
+  part = tot/go->ncpus;
+  printf("width=%d bump=%d tot=%ld part=%ld\n", go->width,go->bump,tot,part);
+  for (i=1; i<=go->ncpus; i++) {
+    go->parts[i-1] = 0;
     lim = tot * i/go->ncpus; // find (roughly) border-class of rank lim
+    cum = 0;
     allowall();
-    for (d=go->width-1; lim >= delta; d--) {  // fix (octal) digits, from most to least significant
-      assert(d >= 0);
-      for (size = t = 0; lim+delta >= size;) {
-        t++;
-        assert(t < 8);
-        lim -= size;
+    for (d=go->width; --d>=dmin ; ) {  // fix (octal) digits, from most to least significant
+      for (t=0; t<8; t++) {
         setborder(go->bump,d,t);
         size = bordercnt(go->width,go->bump);
-//printf("width=%d bump=%d d=%d t=%d size=%lld\n", width, bump, d,t,size);
+        // printf("d=%d t=%d size=%ld cum=%ld lim=%ld\n", d,t,size,cum,lim);
+        if (cum+size > lim)
+          break;
+        cum += size;
       }
       go->parts[i-1] |= (uint64_t)t << (3*d);
-//printf("parts[%d]=%lld\n", i-1, parts[i-1]);
+      if (d==dmin && cum+size-lim < lim-cum) {
+        cum += size;
+        go->parts[i-1] += 1LL << (3*d);
+      }
+      // printf("  parts[%d]=%lld\n", i-1, go->parts[i-1]);
     }
-    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], lim);
+    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
   }
 }
 
@@ -162,6 +171,7 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
     }
     closedelta(go);
   }
+  assert(sc == NULL);
   assert(jtempty(jts));
 }
 
@@ -231,6 +241,9 @@ int main(int argc, char *argv[])
     exit(1);
   }
   go = goinit(width, modulus, nextx, ncpus, cpuid);
+
+  exit(0);
+
   tsizelen = strlen(tsizearg = argv[7]);
   if (!isdigit(c = tsizearg[tsizelen-1]))
     tsizearg[tsizelen-1] = '\0';

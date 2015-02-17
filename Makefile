@@ -10,7 +10,7 @@ instream:	instream.c instream.h modadd.h modulus.h Makefile
 	cc -DMAININSTREAM $(CFLAGS) -o instream instream.c modadd.c
 
 outstream:	outstream.c sortstate.c sortstate.h partition.c partition.h modadd.h modulus.h Makefile
-	cc -DMAINOUTSTREAM$(CFLAGS) -o outstream outstream.c sortstate.c partition.c states.c modadd.c
+	cc -DMAINOUTSTREAM $(CFLAGS) -o outstream outstream.c sortstate.c partition.c states.c modadd.c
 
 partition:	partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
 	cc -DMAINPARTITION $(CFLAGS)  -o partition partition.c states.c sortstate.c

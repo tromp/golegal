@@ -128,7 +128,7 @@ goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
   char inname[FILENAMELEN];
   statebuf *sb;
   FILE *fp;
-  int from,j;
+  int from,to,j;
   goin *gin;
 
   gin = (goin *)calloc(1,sizeof(goin));
@@ -142,18 +142,21 @@ goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
   gin->modulus = modulus;
   sb = &gin->stream[gin->nstreams = 0];
   for (from=0; from<FANIN*ncpus; from++) {
-    for (j=0; ; j++) {
-      sprintf(inname,"%s.%d.%d.%d",inbase,from,cpuid,j); 
-      if (!(fp = fopen(inname, "r"))) {
-        break;
+    for (to=cpuid; to<FANIN*ncpus; to+=ncpus) {
+      for (j=0; ; j++) {
+        sprintf(inname,"%s.%d.%d.%d",inbase,from,to,j); 
+        if (!(fp = fopen(inname, "r"))) {
+          break;
+        }
+        if (gin->nstreams == MAXSTREAMS) {
+          printf ("#inputfiles exceeds MAXSTREAMS (%d)\n", MAXSTREAMS);
+          exit(1);
+        }
+        printf("opened %s\n", inname);
+        sb->fp = fp;
+        strncpy(sb->fname, inname, FILENAMELEN);
+        hpinsert(gin, gin->nstreams++, sb++);
       }
-      if (gin->nstreams == MAXSTREAMS) {
-        printf ("#inputfiles exceeds MAXSTREAMS (%d)\n", MAXSTREAMS);
-        exit(1);
-      }
-      sb->fp = fp;
-      strncpy(sb->fname, inname, FILENAMELEN);
-      hpinsert(gin, gin->nstreams++, sb++);
     }
   }
   return gin;

@@ -84,12 +84,13 @@ void setborder(int bump, int i, int type)
 {
   int ix = i;
 
-  if (bump >= borderlen - borderlen/3 && (ix -= borderlen/3) < 0)
+  int twothirds = borderlen - borderlen/3;
+  if (bump >= twothirds && (ix -= twothirds) < 0)
     ix += borderlen;
   if (type & 4) {
     if (ix==0) {
-      int col = !(type & 2); // opp color of virtual libstone at -1
-      int hasr = type & 1;
+      int col = !(type & 1); // opp color of virtual libstone at -1
+      int hasr = type & 2;
       allow[ix] = 1 << (8 + 2*hasr + col);
     } else allow[ix] = 3 << (2*type); // allow either color
   } else allow[ix] = 1 << type;
@@ -97,6 +98,9 @@ void setborder(int bump, int i, int type)
 
 int allowed(int i, uint64_t bs)
 {
+  // if (i==0)
+  //  printf("allowed(%ld)=%d\n", bs&TYPEMASK, (allow[i]>>(bs&TYPEMASK)) & 1);
+  // assert((bs&TYPEMASK) < 4 || (bs&TYPEMASK) >= 8);
   return ((allow[i]>>(bs&TYPEMASK)) & 1) && !(bs >> (STIFT+borderlen-i));
 }
 
@@ -136,15 +140,17 @@ uint64_t bordercnt(int len, int bmp)
     jtstartfor(order,keybits);
     while ((sc = jtnext(order)) != NULL) {
       //assert(sc->state != 0LL);
-      //printf("%llo\n", sc->state);
+      //printf("%llx\n", sc->state);
       expandat(order, sc, i);
     }
   }
   tot = 0LL;
   jtstartfor(order,keybits);
-  while ((sc = jtnext(order)) !=NULL) {
-    if (sc->state & (NDYBUMP|NORM))
+  for (i=0; (sc = jtnext(order)) !=NULL; i++) {
+    if (sc->state & (NDYBUMP|NORM)) {
+      // printf("%d: %lo %ld\n", i, sc->state, sc->cnt);
       tot += sc->cnt;
+    }
   }
   jtfree(order);
   return tot;
