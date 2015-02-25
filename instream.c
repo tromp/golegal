@@ -152,7 +152,7 @@ goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
           printf ("#inputfiles exceeds MAXSTREAMS (%d)\n", MAXSTREAMS);
           exit(1);
         }
-        printf("opened %s\n", inname);
+        // printf("opened %s\n", inname);
         sb->fp = fp;
         strncpy(sb->fname, inname, FILENAMELEN);
         hpinsert(gin, gin->nstreams++, sb++);
