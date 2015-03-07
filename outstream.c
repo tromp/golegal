@@ -8,7 +8,7 @@
 #include "outstream.h"
 #include "modadd.h"
 
-#define MAXCPUS 4
+#define MAXCPUS 8
 #define FINALSTATE ((uint64_t)-1LL)
 #define FILENAMELEN 64
 
@@ -33,6 +33,7 @@ void setpartition(goout *go)
   int i,dmin,d,t;
   long size,part,cum,lim,tot;
 
+  assert(go->ncpus <= MAXCPUS);
   go->parts[go->ncpus-1] = FINALSTATE;
   if (go->ncpus == 1)
     return;
