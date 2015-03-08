@@ -34,5 +34,5 @@ crtm as = crt $ zip as moduli
 
 main = do inp <- getContents
           let ls = lines inp
-          let as = map (read . (!!4) . words) ls
-          putStrLn $ show $ crtm as
+          let as = map ((\[m,a] -> (a,m)) . map read . words) ls
+          putStrLn $ show $ crt as
