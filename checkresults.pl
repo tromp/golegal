@@ -3,11 +3,17 @@
 use strict;
 use warnings;
 
+use File::Basename;
 use Data::Dumper;
+use Cwd 'abs_path';
+
+# figure where i'm running from so i can set the module path
+# print abs_path($0) . "\n";
+# print dirname(abs_path($0)) . "\n";
 
 # hash table to go board dimensions and expected
 # number of legal moves
-use lib '/home/mdidomenico/Downloads/golegal';
+use lib dirname(abs_path($0));
 use checkhash qw(:DEFAULT $legalpg);
 
 # where are the shell binaries located
