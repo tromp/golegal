@@ -36,3 +36,4 @@ main = do inp <- getContents
           let ls = lines inp
           let as = map ((\[m,a] -> (a,m)) . map read . words) ls
           putStrLn $ show $ crt as
+          putStrLn $ show $ product $ map snd as

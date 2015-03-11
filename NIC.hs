@@ -30,6 +30,4 @@ main = do [arg] <- getArgs
           mapM_ print check
           let rowlegal = [l | (i,n,l,(y,x))<-cumcnts, x==0]
           let check19 = zipWith (\x y-> (x-y) `mod` modulus) rowlegal l19
-          mapM_ print check19
-
-
+          mapM_ print $ zip [1..] check19
