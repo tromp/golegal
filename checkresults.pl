@@ -17,7 +17,11 @@ use lib dirname(abs_path($0));
 use checkhash qw(:DEFAULT $legalpg);
 
 # where are the shell binaries located
-my $echoloc = "/usr/bin";
+# apparently between rhel 6 and 7 then moved 'echo'
+my $echoloc = "/bin";
+if ( ! -f "$echoloc/echo" ) {
+  $echoloc = "/usr/bin";
+}
 my $bcloc   = "/usr/bin";
 
 # we'll store what we find in the output file in
@@ -30,18 +34,18 @@ while ( my $tmp = <FIFO> ) {
     chomp($tmp);
 
     # if the line doesn't start with "newillegal" skip it
-    if ( $tmp !~ m/newillegal/ ) { next }
+    if ( $tmp !~ m/^checkresults: / ) { next }
 
     # output format
     # 9 6 0 newillegal 1633388083117977960 needy 17301943860296361582 legal 2838789950505283677
     my @data = split( " ", $tmp );
 
-    my $left    = $data[0];
-    my $right   = $data[1];
-    my $issqr   = $data[2];
-    my $illegal = $data[4];
-    my $needy   = $data[6];
-    my $legal   = $data[8];
+    my $left    = $data[1];
+    my $right   = $data[2];
+    my $issqr   = $data[3];
+    my $illegal = $data[5];
+    my $needy   = $data[7];
+    my $legal   = $data[9];
 
     # if the grid isn't rectangular skip it
     if ( $issqr != 0 ) { next }

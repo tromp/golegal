@@ -16,6 +16,11 @@ if (( $# >= 8 )); then   keep=$8; else keep=0; fi
 obsolete=""
 tmpcpu="tmp.cpu"
 bin="/home/tromp/golegal"
+if [ -d "$HOME/golegal" ]
+then
+	bin="$HOME/golegal"
+fi
+
 echo "$bin/start $width $modidx"
 if ((x == 0 && y == 0)); then $bin/start $width $modidx; fi
 while ((y < height)); do
