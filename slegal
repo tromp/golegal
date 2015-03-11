@@ -17,7 +17,7 @@ obsolete=""
 tmpcpu="tmp.cpu"
 bin="/home/tromp/golegal"
 if [ -d "$HOME/golegal" ]
-then
+then 
 	bin="$HOME/golegal"
 fi
 
