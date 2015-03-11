@@ -97,15 +97,22 @@ int main(int argc, char *argv[])
   hidefiles(go, outbase, noutfiles);
 
   totin = totalread(gin);
-  printf("(%d,%d) size %lu",y,x,nin);
-  printf(" avg %1.3f mod ", totin/(double)nin);
+  printf("%d %d size %lu",y,x,nin);
+  printf(" avg %1.3f mod ",totin/(double)nin);
   if (modulus)
     printf("%lu",modulus);
   else printf("18446744073709551616");
 
-  printf("\nnewillegal %lu ",nnewillcnt);
-  printf(       "needy %lu ", needywritten(go));
-  printf(       "legal %lu ",legalwritten(go));
-  printf("at (%d,%d)\n",y+(nextx==0),nextx);
+//  printf("\nnewillegal %lu ",nnewillcnt);
+//  printf(       "needy %lu ", needywritten(go));
+//  printf(       "legal %lu ",legalwritten(go));
+//  printf("at (%d,%d)\n",y+(nextx==0),nextx);
+  printf("\n");
+  printf(      "%d %d %d ",width,y+(nextx==0),nextx);
+  printf("newillegal %lu ",nnewillcnt);
+  printf(     "needy %lu ",needywritten(go));
+  printf(      "legal %lu",legalwritten(go));
+  printf("\n");
   return 0;
 }
+
