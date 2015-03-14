@@ -65,7 +65,7 @@ void setpartition(goout *go)
       }
       // printf("  parts[%d]=%lld\n", i-1, go->parts[i-1]);
     }
-    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
+    // printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
   }
 }
 
