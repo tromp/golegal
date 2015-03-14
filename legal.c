@@ -108,12 +108,5 @@ int main(int argc, char *argv[])
   printf(       "legal %lu ",legalwritten(go));
   printf("at (%d,%d)\n",y+(nextx==0),nextx);
 
-  printf( "checkresults: ");
-  printf(      "%d %d %d ",width,y+(nextx==0),nextx);
-  printf("newillegal %lu ",nnewillcnt);
-  printf(     "needy %lu ",needywritten(go));
-  printf(      "legal %lu",legalwritten(go));
-  printf("\n");
-
   return 0;
 }

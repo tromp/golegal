@@ -27,34 +27,35 @@ my $bcloc   = "/usr/bin";
 # we'll store what we find in the output file in
 # this global hash variable
 my $grids;
+my ($width,$modidx);
 
 # pull our data from standard in (pipe friendly)
 open( FIFO, "< -" );
 while ( my $tmp = <FIFO> ) {
-    chomp($tmp);
 
-    # if the line doesn't start with "newillegal" skip it
-    if ( $tmp !~ m/^checkresults: / ) { next }
+    # grab width and modidx from initial line
+    # /home/tromp/golegal/start 19 1
+    if ($tmp =~ /\/start (\d+) (\d+)$/) {
+      ($width,$modidx) = ($1,$2);
+      next;
+    }
 
     # output format
-    # 9 6 0 newillegal 1633388083117977960 needy 17301943860296361582 legal 2838789950505283677
-    my @data = split( " ", $tmp );
-
-    my $left    = $data[1];
-    my $right   = $data[2];
-    my $issqr   = $data[3];
-    my $illegal = $data[5];
-    my $needy   = $data[7];
-    my $legal   = $data[9];
+    # newillegal 1633388083117977960 needy 17301943860296361582 legal 2838789950505283677 at (6,0)
+    next unless my ($illegal, $needy, $legal, $right, $issqr) =
+      $tmp =~ /^newillegal (\d+) needy (\d+) legal (\d+) at \((\d+),(\d+)\)$/;
 
     # if the grid isn't rectangular skip it
     if ( $issqr != 0 ) { next }
 
     # since we're multi-core push the field up into array inside the hash
-    push( @{ $grids->{$left}->{$right} }, $legal );
+    push( @{ $grids->{$width}->{$right} }, $legal );
 
 }
 close(FIFO);
+
+# modular offsets, give relatively primes numbers when subtracted from 2^64
+my @moffs = (0,3,5,7,9,11,15,17,33,35,39,45);
 
 # loop over the grids we found, sorted by x then y
 foreach my $left ( sort keys %{$grids} ) {
@@ -66,7 +67,7 @@ foreach my $left ( sort keys %{$grids} ) {
         # run them through bc to add
         # had trouble getting perl to calc number of 2^64
         # shell out to bc (icky but it works and it's quick)
-        my $l2 = `$echoloc/echo "$l1" | $bcloc/bc`;
+        my $l2 = `$echoloc/echo "($l1) % (2^64-$moffs[$modidx])" | $bcloc/bc`;
         chomp($l2);
 
         # pull the expected value from the legal moves grid
@@ -74,7 +75,7 @@ foreach my $left ( sort keys %{$grids} ) {
 
         # some of the values are over 2^64 so we need to mod them down
         # shelling out to bc again
-        my $l4 = `$echoloc/echo "$l3 % (2^64)" | $bcloc/bc`;
+        my $l4 = `$echoloc/echo "$l3 % (2^64-$moffs[$modidx])" | $bcloc/bc`;
         chomp($l4);
 
         # check our computed value against the table, does it match?
