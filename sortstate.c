@@ -156,33 +156,31 @@ statecnt *jtinsert(jtset *jts, statecnt *sb)
   return jtinsertat(jts, sb, &jts->insert[sb->state & jts->locmask]);
 }
 
-void sortblock(jtset *jts, stateblock *block, int npairs, locator *pairmap1, int shift)
-{
-  int i;
-  statecnt *sb;
-
-//printf("sorting block %d\n", (int)(block-jts->blocks));
-  if (block->previous != NILBLOCK)
-    sortblock(jts, &jts->blocks[block->previous], NPAIRS, pairmap1, shift);
-  for (i=0; i<npairs; i++) {
-    sb = &block->pairs[i];
-    jtinsertat(jts, sb, &pairmap1[sb->state >> shift & jts->locmask]);
-  }
-  freeblock(jts,block);
-}
-
 void sortstates(jtset *jts, int keywidth)
 {
-  int digit;
+  int i, digit, npairs, prev;
   locator *bin, *tmp;
+  statecnt *sb;
+  stateblock *block;
 
 //printf("sorting all blocks\n");
   for (digit=jts->locbits; digit<keywidth; digit+=jts->locbits) {
     tmp = jts->stream; jts->stream = jts->insert;  jts->insert = tmp;
-    for (bin=jts->stream; bin <= &jts->stream[jts->locmask]; bin++)
+    for (bin=jts->stream; bin <= &jts->stream[jts->locmask]; bin++) {
       if (bin->last != NILBLOCK) {
-        sortblock(jts, &jts->blocks[bin->last],bin->npairs, jts->insert, digit);
+        // sortblock(jts, &jts->blocks[bin->last],bin->npairs, jts->insert, digit);
+        for (block=&jts->blocks[bin->last],npairs=bin->npairs; ; block=&jts->blocks[prev],npairs=NPAIRS) {
+          for (i=0; i<npairs; i++) {
+            sb = &block->pairs[i];
+            jtinsertat(jts, sb, &jts->insert[sb->state >> digit & jts->locmask]);
+          }
+          prev = block->previous;
+          freeblock(jts,block);
+          if (prev == NILBLOCK)
+            break;
+        }
         *bin = nullocator;
+      }
     }
   }
 //printf("all blocks sorted\n");

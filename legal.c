@@ -10,8 +10,8 @@
 #include "modulus.h"
 #include "modadd.h"
 
-// ok for width 18 since 3*18 = 54 <= 5*LOCBITS
-#define LOCBITS 11
+// ok for width 19 since 3*19 = 57 <= 5*LOCBITS
+#define LOCBITS 12
 
 int main(int argc, char *argv[])
 {
