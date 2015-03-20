@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define MAXCPUS 8
+#define MAXCPUS 32
 #define FINALSTATE ((uint64_t)-1LL)
 #define FILENAMELEN 64
 
