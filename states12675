@@ -1,0 +1,100 @@
+#! /local/repos/mtools/chainperl -w
+package state;
+
+use Carp;
+use Getopt::Long;
+use strict;
+
+use vars qw($width
+            $height
+            $modindex
+	    $starty
+	    $startx
+            $ncpus
+            $mem
+            $q_rmdelay
+            $dir
+	    );
+
+$state::width = undef;
+$state::height = undef;
+$state::modindex = undef;
+$state::starty = 0;
+$state::startx = 0;
+$state::ncpus = '1';
+$state::mem = '1G';
+$state::q_rmdelay = 0;
+$state::dir = '/scratch/tromp/12675'; # hardcoded in programs start&legal too
+
+# "Private" variables used only internally to this file
+
+Getopt::Long::Configure("pass_through"); # let options through
+
+@options = ('y=s'           => \$starty,
+            'x=s'           => \$startx,
+            'delay!'        => \$q_rmdelay,
+           );
+
+@tasks = ('state::set_data', 'state::generate_jobs');
+
+sub set_data {
+  $state::height //= $state::width;
+  defined($width) or confess "Error: can't run without \$width set";
+  defined($modindex) or confess "Error: can't run without \$modindex set";
+  return 0;
+}
+
+sub generate_jobs {
+  $starty //= 0;
+  $startx //= 0;
+  my $sync_node = '';
+  my ($y,$x) = ($starty, $startx);
+  unless ($x || $y) {
+    $sync_node = 'start';
+    submit $sync_node, exec => 'state::start', after => '', args => "$width $modindex";
+  }
+  my $yxcpus = 1;
+  $yxcpus = $1 if $ncpus =~ /^(\d+)$/;
+  my $prevyx = '';
+  while ($y < $height) {
+    if ($ncpus =~ /^(\d+)@\($y,$x\) */) {
+      $yxcpus = $1;
+      $ncpus = $'; #'
+    }
+    my $prev_sync_node = $sync_node;
+    my @cell_nodes = map { "cell.$y.$x.$_" } (0..$yxcpus-1);
+    foreach my $cell_node (@cell_nodes) {
+      my ($cpu) = $cell_node =~ /(\d+)$/;
+      submit $cell_node, exec => 'state::cell', after => $prev_sync_node, args => "$width $modindex $y $x $yxcpus $cpu $mem";
+    }
+    my $prevprevyx = $prevyx;
+    $prevyx = "$y.$x";
+    my $obsoleteyx = $q_rmdelay ? $prevprevyx : $prevyx;
+    if (++$x == $width) { $x = 0; $y++; }
+    $sync_node = "sync.$y.$x";
+    submit $sync_node, exec => 'state::sync', after => join(', ',@cell_nodes), args => "$state::dir/mod$state::modindex/state.$width.$modindex.$obsoleteyx.*";
+  }
+  return 0;
+}
+
+sub start {
+  my ($args) = @_;
+  return run::run("start $args", '');
+}
+
+sub sync {
+  my ($args) = @_;
+  foreach my $oldfile (glob $args) {
+    print "Deleting $oldfile\n";
+    unlink $oldfile;
+  }
+  return 0;
+}
+
+sub cell {
+  my ($args) = @_;
+  my $rc = run("legal $args", '');
+  return $rc;
+}
+
+1;
