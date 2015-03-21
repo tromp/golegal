@@ -144,8 +144,9 @@ goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
   for (from=0; from<FANIN*ncpus; from++) {
     for (to=cpuid; to<FANIN*ncpus; to+=ncpus) {
       for (j=0; ; j++) {
-        sprintf(inname,"%s.%d.%d.%d",inbase,from,to,j); 
+        sprintf(inname,"%s/fromto.%d.%d/%d",inbase,from,to,j); 
         if (!(fp = fopen(inname, "r"))) {
+          // printf("Failed to open %s\n",inname);
           break;
         }
         if (gin->nstreams == MAXSTREAMS) {
@@ -200,7 +201,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  sprintf(inbase,"%d.%d/%d.%d/",wd,modidx,y,x);
+  sprintf(inbase,"%d.%d/yx.%02d.%02d",wd,modidx,y,x);
   gin = openstreams(inbase, ncpus, cpuid, modulus))
   if (!nstreams(gin))
     fprintf (stderr, "wanring: no input files\n");

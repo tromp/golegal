@@ -35,8 +35,13 @@ void dumpstart(char *basename)
   char inname[FILENAMELEN];
   int notok;
 
-  sprintf(inname,"%s.0.0.0",basename);
+  sprintf(inname,"%s/fromto.0.0/0",basename);
   fp = fopen(inname, "w");
+  if (!fp) {
+    printf("Failed to open %s for writing\n",inname);
+    exit(1);
+  }
+
   writedelta(fp, startstate(), 1LL);
   writedelta(fp, FINALSTATE-startstate(), modulus-1LL);
   notok = fclose(fp);
@@ -58,12 +63,13 @@ int main(int argc, char *argv[])
   }
   wd = atoi(argv[1]);
   modidx = atoi(argv[2]);
+  printf("%s %d %d\n", argv[0], wd, modidx);
   if (modidx < 0 || modidx >= NMODULI) {
     printf ("modulo_index %d not in range [0,%d)\n", modidx, NMODULI);
     exit(1);
   }
   modulus = -(uint64_t)modulusdeltas[modidx];
-  sprintf(outbase,"%d.%d/0.0/",wd,modidx);
+  sprintf(outbase,"%d.%d/yx.00.00",wd,modidx);
   dumpstart(outbase);
   return 0;
 }

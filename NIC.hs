@@ -14,6 +14,10 @@ addyx m (i0,n0,l0,yx) (i1,n1,l1,_) = ((i0+i1) `mod` m,
                                       (n0+n1) `mod` m,
                                       (l0+l1) `mod` m, yx)
 
+eqlyx1 (a,_,_) (b,_,_) = a==b
+
+addyx1 (yx,s0,a0) (_,s1,a1) = (yx,s0+s1,a0+a1)
+
 main = do 
           inp <- getContents
           let (width,modidx) = head [(read w::Int,read m::Int) |
@@ -22,6 +26,15 @@ main = do
                       "/start" `isSuffixOf` bin]
           putStrLn $ "width "++show width++" modidx "++show modidx
           let modulus = moduli !! modidx
+          let sizes = [(yx', size', floor(fromIntegral size' * avg')) |
+                      line <- lines inp,
+                      "(" `isPrefixOf` line,
+                      let (yx:_:size:_:avg:_) = words line,
+                      let yx' = read yx :: (Int,Int),
+                      let size' = read size :: Integer,
+                      let avg' = if "nan" `isSuffixOf` avg then 1.0 else read avg :: Double
+                      ]
+          let cumsizes = map (foldr1 addyx1) $ groupBy eqlyx1 sizes
           let cnts = [(read newill, read needy, read legal, read yx) |
                       line <- lines inp,
                       "newillegal" `isPrefixOf` line,
@@ -32,7 +45,9 @@ main = do
           let cnt3 = map (\(i,n,l,yx) -> 3*(n+l) `mod` modulus) cumcnts
           let diffs = zipWith (\x y-> (x-y) `mod` modulus) cnt1 (3:cnt3)
           let check = zipWith (\(i,n,l,yx) d -> (i,n,l,yx,d)) cumcnts diffs
-          mapM_ print check
+          let sizecheck = zipWith (\(_,s,a) (i,n,l,yx,d) -> (yx,s,a,i,n,l,d) ) cumsizes check
+          mapM_ print sizecheck
           let rowlegal = [l | (i,n,l,(y,x))<-cumcnts, x==0]
           let check19 = zipWith (\x y-> (x-y) `mod` modulus) rowlegal (legal width)
           mapM_ print $ zip [1..] check19
+

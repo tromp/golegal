@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include "states.h"
 #include "partition.h"
 #include "sortstate.h"
@@ -159,7 +160,13 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
   statecnt *sc;
   int i;
 
-  sprintf(formatname,"%s.%d.%%d.%d", outbase, go->cpuid, extension);
+  if (extension==0) {
+    for (i=0; i<go->ncpus; i++) {
+      sprintf(formatname,"%s/fromto.%d.%d", outbase, go->cpuid, i);
+      mkdir(formatname, 0755);
+    }
+  }
+  sprintf(formatname,"%s/fromto.%d.%%d/%d", outbase, go->cpuid, extension);
 //printf("formatname = %s\n", formatname);
   jtstartfor(jts, 3*go->width);
   sc = jtnext(jts);
@@ -182,8 +189,8 @@ void hidefiles(goout *go, char *basename, int extension)
   int i;
 
   for (i=0; i<go->ncpus; i++) {
-    sprintf(outname,"%s.%d.%d.%d", basename, go->cpuid, i, extension);
-    sprintf(bak,"%s.%d.%d.%d.bak", basename, go->cpuid, i, extension);
+    sprintf(outname,"%s/fromto.%d.%d/%d", basename, go->cpuid, i, extension);
+    sprintf(bak,"%s/fromto.%d.%d/%d.bak", basename, go->cpuid, i, extension);
     if (rename(outname, bak) == 0)
       printf("%s renamed to %s\n",outname, bak);
   }
@@ -230,7 +237,7 @@ int main(int argc, char *argv[])
   y = atoi(argv[3]);
   x = atoi(argv[4]);
   nextx = (x+1) % width;
-  sprintf(outbase,"%d.%d/%d.%d/",width,modidx,y+(nextx==0),nextx);
+  sprintf(outbase,"%d.%d/yx.%02d.%02d",width,modidx,y+(nextx==0),nextx);
   ncpus = atoi(argv[5]);
   if (ncpus < 1 || ncpus > MAXCPUS) {
     printf("#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);
