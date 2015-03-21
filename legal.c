@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  sprintf(inbase,"state.%d.%d.%d.%d",width,modidx,y,x); 
+  sprintf(inbase,"%d.%d/%d.%d/",width,modidx,y,x); 
   gin = openstreams(inbase, ncpus, cpuid, modulus);
   if (!nstreams(gin))
     return 0;
   go = goinit(width, modulus, nextx, ncpus, cpuid);
-  sprintf(outbase,"state.%d.%d.%d.%d",width,modidx,y+(nextx==0),nextx);
+  sprintf(outbase,"%d.%d/%d.%d/",width,modidx,y+(nextx==0),nextx);
 
   nnewillcnt = 0LL;
   jts = jtalloc(msize, modulus, LOCBITS);

@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
   y = atoi(argv[3]);
   x = atoi(argv[4]);
   nextx = (x+1) % width;
-  sprintf(outbase,"state.%d.%d.%d.%d",width,modidx,y+(nextx==0),nextx);
+  sprintf(outbase,"%d.%d/%d.%d/",width,modidx,y+(nextx==0),nextx);
   ncpus = atoi(argv[5]);
   if (ncpus < 1 || ncpus > MAXCPUS) {
     printf("#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);

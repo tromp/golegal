@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  sprintf(inbase,"state.%d.%d.%d.%d",wd,modidx,y,x);
+  sprintf(inbase,"%d.%d/%d.%d/",wd,modidx,y,x);
   gin = openstreams(inbase, ncpus, cpuid, modulus))
   if (!nstreams(gin))
     fprintf (stderr, "wanring: no input files\n");

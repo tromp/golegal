@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
   modulus = -(uint64_t)modulusdeltas[modidx];
-  sprintf(outbase,"state.%d.%d.0.0",wd,modidx);
+  sprintf(outbase,"%d.%d/0.0/",wd,modidx);
   dumpstart(outbase);
   return 0;
 }
