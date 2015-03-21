@@ -10853,3 +10853,480 @@ time /home/tromp/golegal/legal 19 0 4 12 16 12 21G &> tmp.cpu12
 time /home/tromp/golegal/legal 19 0 4 12 16 13 21G &> tmp.cpu13
 time /home/tromp/golegal/legal 19 0 4 12 16 14 21G &> tmp.cpu14
 time /home/tromp/golegal/legal 19 0 4 12 16 15 21G &> tmp.cpu15
+
+real	113m6.092s
+user	100m51.489s
+sys	10m50.481s
+
+real	121m4.523s
+user	108m44.906s
+sys	10m44.367s
+
+real	124m0.508s
+user	110m30.883s
+sys	11m48.892s
+
+real	138m13.857s
+user	123m55.033s
+sys	12m55.013s
+
+real	152m10.305s
+user	135m19.119s
+sys	15m14.309s
+
+real	152m57.234s
+user	136m34.164s
+sys	14m34.552s
+
+real	177m54.483s
+user	159m52.225s
+sys	16m20.817s
+
+real	181m37.676s
+user	162m55.102s
+sys	17m0.696s
+
+real	189m11.605s
+user	169m54.353s
+sys	17m34.807s
+
+real	198m34.033s
+user	177m18.730s
+sys	19m29.161s
+
+real	217m31.943s
+user	193m39.527s
+sys	21m52.699s
+
+real	223m19.943s
+user	200m52.168s
+sys	20m28.349s
+
+real	232m19.581s
+user	209m24.742s
+sys	20m51.334s
+
+real	237m16.739s
+user	213m45.894s
+sys	21m38.295s
+
+real	241m13.536s
+user	217m17.112s
+sys	22m10.522s
+
+real	245m41.365s
+user	221m52.710s
+sys	21m49.412s
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 20594737533 avg 1.000 mod 18446744073709551616
+newillegal 9455754887266751992 needy 14138095810599239970 legal 10718625573075367333 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 18982034412 avg 1.000 mod 18446744073709551616
+newillegal 6002961841675678144 needy 12848896573051218252 legal 4143143551232655988 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 9207757481 avg 1.000 mod 18446744073709551616
+newillegal 16223544304741405778 needy 17523301334520367560 legal 14514279073133602688 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 9655511289 avg 1.000 mod 18446744073709551616
+newillegal 102726086242905834 needy 694007870192802492 legal 5340866789204992088 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 9156418824 avg 1.000 mod 18446744073709551616
+newillegal 7438562661524994768 needy 11425779044072047710 legal 16393212101412617978 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 10564355836 avg 1.000 mod 18446744073709551616
+newillegal 13882651659026153842 needy 16028248896629358342 legal 15051208044833723702 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 15275906698 avg 1.000 mod 18446744073709551616
+newillegal 6282176004864528414 needy 10363257582692139694 legal 11781012412698819554 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 12867505401 avg 1.000 mod 18446744073709551616
+newillegal 1005397438884319998 needy 14393904049436474700 legal 1109908287074850054 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 21456840337 avg 1.000 mod 18446744073709551616
+newillegal 18415437028176006410 needy 11082245312214422228 legal 8412749976465842998 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 21216602027 avg 1.000 mod 18446744073709551616
+newillegal 13651483307680341600 needy 17014031063285069380 legal 16601609973879864502 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 14469751672 avg 1.000 mod 18446744073709551616
+newillegal 2045075946149580472 needy 5283928926355843412 legal 14996852154797639152 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 18197624553 avg 1.000 mod 18446744073709551616
+newillegal 15798417663588593904 needy 9154083859743720898 legal 14158326041282288222 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 16977080434 avg 1.000 mod 18446744073709551616
+newillegal 12128306486371846668 needy 2447740253893504318 legal 18178319241349906090 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 19604562439 avg 1.000 mod 18446744073709551616
+newillegal 3202100172301874898 needy 12040782323829856208 legal 0 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 12170153115 avg 1.000 mod 18446744073709551616
+newillegal 2541985067999235598 needy 634747015710028790 legal 0 at (4,13)
+width=19 bump=13 tot=354458750518 part=22153671907
+(4,12) size 14313557338 avg 1.000 mod 18446744073709551616
+newillegal 7365478394845784446 needy 16529989407848409098 legal 12732216554918063270 at (4,13)
+Fri Mar 20 14:38:06 EDT 2015
+nohup: ignoring input
+/home/tromp/golegal/start 19 0
+time /home/tromp/golegal/legal 19 0 4 13 24 0 19G &> tmp.cpu0
+time /home/tromp/golegal/legal 19 0 4 13 24 1 19G &> tmp.cpu1
+time /home/tromp/golegal/legal 19 0 4 13 24 2 19G &> tmp.cpu2
+time /home/tromp/golegal/legal 19 0 4 13 24 3 19G &> tmp.cpu3
+time /home/tromp/golegal/legal 19 0 4 13 24 4 19G &> tmp.cpu4
+time /home/tromp/golegal/legal 19 0 4 13 24 5 19G &> tmp.cpu5
+time /home/tromp/golegal/legal 19 0 4 13 24 6 19G &> tmp.cpu6
+time /home/tromp/golegal/legal 19 0 4 13 24 7 19G &> tmp.cpu7
+time /home/tromp/golegal/legal 19 0 4 13 24 8 19G &> tmp.cpu8
+time /home/tromp/golegal/legal 19 0 4 13 24 9 19G &> tmp.cpu9
+time /home/tromp/golegal/legal 19 0 4 13 24 10 19G &> tmp.cpu10
+time /home/tromp/golegal/legal 19 0 4 13 24 11 19G &> tmp.cpu11
+time /home/tromp/golegal/legal 19 0 4 13 24 12 19G &> tmp.cpu12
+time /home/tromp/golegal/legal 19 0 4 13 24 13 19G &> tmp.cpu13
+time /home/tromp/golegal/legal 19 0 4 13 24 14 19G &> tmp.cpu14
+time /home/tromp/golegal/legal 19 0 4 13 24 15 19G &> tmp.cpu15
+time /home/tromp/golegal/legal 19 0 4 13 24 16 19G &> tmp.cpu16
+time /home/tromp/golegal/legal 19 0 4 13 24 17 19G &> tmp.cpu17
+time /home/tromp/golegal/legal 19 0 4 13 24 18 19G &> tmp.cpu18
+time /home/tromp/golegal/legal 19 0 4 13 24 19 19G &> tmp.cpu19
+time /home/tromp/golegal/legal 19 0 4 13 24 20 19G &> tmp.cpu20
+time /home/tromp/golegal/legal 19 0 4 13 24 21 19G &> tmp.cpu21
+time /home/tromp/golegal/legal 19 0 4 13 24 22 19G &> tmp.cpu22
+time /home/tromp/golegal/legal 19 0 4 13 24 23 19G &> tmp.cpu23
+
+real	0m0.044s
+user	0m0.001s
+sys	0m0.016s
+
+real	0m0.055s
+user	0m0.001s
+sys	0m0.018s
+
+real	0m0.052s
+user	0m0.000s
+sys	0m0.016s
+
+real	0m0.056s
+user	0m0.001s
+sys	0m0.018s
+
+real	0m0.055s
+user	0m0.002s
+sys	0m0.015s
+
+real	0m0.059s
+user	0m0.001s
+sys	0m0.019s
+
+real	0m0.057s
+user	0m0.002s
+
+sys	0m0.017s
+real	0m0.058s
+user	0m0.003s
+sys	0m0.014s
+
+real	261m39.114s
+user	186m43.952s
+sys	16m31.735s
+
+real	298m35.414s
+user	212m2.324s
+sys	17m18.312s
+
+real	310m46.754s
+user	213m27.153s
+sys	18m1.429s
+
+real	312m45.872s
+user	219m25.029s
+sys	18m17.927s
+
+real	328m17.002s
+user	226m8.530s
+sys	19m7.350s
+
+real	350m45.323s
+user	243m23.571s
+sys	21m11.221s
+
+real	351m43.320s
+user	233m44.942s
+sys	20m16.442s
+
+real	380m0.039s
+user	251m4.149s
+sys	21m8.920s
+
+real	383m31.224s
+user	260m7.484s
+sys	20m42.234s
+
+real	389m57.468s
+user	263m56.236s
+sys	21m11.557s
+
+real	397m8.220s
+user	273m7.148s
+sys	22m21.446s
+
+real	445m34.412s
+user	308m52.930s
+sys	26m7.846s
+
+real	451m56.345s
+user	304m0.758s
+sys	25m26.764s
+
+real	453m19.979s
+user	314m2.412s
+sys	26m45.866s
+
+real	470m36.917s
+user	334m55.140s
+sys	27m5.444s
+
+real	502m52.684s
+user	355m19.039s
+sys	28m36.370s
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 24598207049 avg 1.002 mod 18446744073709551616
+newillegal 4494798346570661368 needy 9017550863616160420 legal 3882972887361613181 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 23450096592 avg 1.002 mod 18446744073709551616
+newillegal 16583442506550685292 needy 5207930706545408242 legal 655376658966744090 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 17439923204 avg 1.003 mod 18446744073709551616
+newillegal 10257740568935501170 needy 10812208710021005674 legal 0 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 16945861991 avg 1.003 mod 18446744073709551616
+newillegal 17969073325390791450 needy 12038583784273225304 legal 13888875077716948630 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 14290780410 avg 1.003 mod 18446744073709551616
+newillegal 13444529700752682020 needy 5820036193405261178 legal 1379371628053493514 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 12298044348 avg 1.003 mod 18446744073709551616
+newillegal 3359340213982472630 needy 1755576234356640476 legal 13544718978727269744 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 14003845334 avg 1.003 mod 18446744073709551616
+newillegal 8740849900732521536 needy 2706493580850960474 legal 9796990538658030476 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 16456043002 avg 1.003 mod 18446744073709551616
+newillegal 4147507499900391140 needy 17336270537954280554 legal 10637533763772454672 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 21280393771 avg 1.002 mod 18446744073709551616
+newillegal 1472379301611552168 needy 8586421318553968042 legal 14245920142384989716 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 15412994440 avg 1.002 mod 18446744073709551616
+newillegal 13346785059979013764 needy 4334647100434420286 legal 14592485803721991688 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 22307936416 avg 1.002 mod 18446744073709551616
+newillegal 11428892559368547666 needy 5967442737805967380 legal 10765266789511806624 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 21408072156 avg 1.002 mod 18446744073709551616
+newillegal 12540832650044624922 needy 2628717766306382770 legal 363034152140034300 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 16006856958 avg 1.002 mod 18446744073709551616
+newillegal 11743090436302833078 needy 6309897194668897004 legal 4449388251529896476 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 18365159363 avg 1.002 mod 18446744073709551616
+newillegal 14569866728477858420 needy 17421112662076918184 legal 14822373852594926822 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 18261047032 avg 1.003 mod 18446744073709551616
+newillegal 3882039575394236484 needy 16357176601209973216 legal 0 at (4,14)
+width=19 bump=14 tot=354562326987 part=14773430291
+(4,13) size 13986402179 avg 1.003 mod 18446744073709551616
+newillegal 17702201582818849290 needy 11902552465565666766 legal 0 at (4,14)
+Fri Mar 20 23:04:55 EDT 2015
+nohup: ignoring input
+/home/tromp/golegal/start 19 0
+time /home/tromp/golegal/legal 19 0 4 14 12 0 42G &> tmp.cpu0
+time /home/tromp/golegal/legal 19 0 4 14 12 1 42G &> tmp.cpu1
+time /home/tromp/golegal/legal 19 0 4 14 12 2 42G &> tmp.cpu2
+time /home/tromp/golegal/legal 19 0 4 14 12 3 42G &> tmp.cpu3
+time /home/tromp/golegal/legal 19 0 4 14 12 4 42G &> tmp.cpu4
+time /home/tromp/golegal/legal 19 0 4 14 12 5 42G &> tmp.cpu5
+time /home/tromp/golegal/legal 19 0 4 14 12 6 42G &> tmp.cpu6
+time /home/tromp/golegal/legal 19 0 4 14 12 7 42G &> tmp.cpu7
+time /home/tromp/golegal/legal 19 0 4 14 12 8 42G &> tmp.cpu8
+time /home/tromp/golegal/legal 19 0 4 14 12 9 42G &> tmp.cpu9
+time /home/tromp/golegal/legal 19 0 4 14 12 10 42G &> tmp.cpu10
+time /home/tromp/golegal/legal 19 0 4 14 12 11 42G &> tmp.cpu11
+
+real	0m45.979s
+user	0m0.014s
+sys	0m0.845s
+0.00user 0.00system 0:45.99elapsed 0%CPU (0avgtext+0avgdata 5120maxresident)k
+0inputs+0outputs (0major+607minor)pagefaults 0swaps
+
+real	0m46.947s
+user	0m0.015s
+sys	0m0.981s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m48.804s
+user	0m0.020s
+sys	0m1.248s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m50.015s
+user	0m0.017s
+sys	0m1.436s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m50.623s
+user	0m0.021s
+sys	0m1.392s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m50.828s
+user	0m0.026s
+sys	0m1.031s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m50.888s
+user	0m0.026s
+sys	0m1.975s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m51.122s
+user	0m0.019s
+sys	0m1.411s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m51.514s
+user	0m0.024s
+sys	0m1.322s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m51.651s
+user	0m0.024s
+sys	0m1.794s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m51.907s
+user	0m0.023s
+sys	0m1.506s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+
+real	0m52.410s
+user	0m0.022s
+sys	0m1.446s
+/home/tromp/golegal/slegal: line 29: kill: (43013) - No such process
+nohup: ignoring input
+/home/tromp/golegal/start 19 0
+time /home/tromp/golegal/legal 19 0 4 14 12 0 42G &> tmp.cpu0
+time /home/tromp/golegal/legal 19 0 4 14 12 1 42G &> tmp.cpu1
+time /home/tromp/golegal/legal 19 0 4 14 12 2 42G &> tmp.cpu2
+time /home/tromp/golegal/legal 19 0 4 14 12 3 42G &> tmp.cpu3
+time /home/tromp/golegal/legal 19 0 4 14 12 4 42G &> tmp.cpu4
+time /home/tromp/golegal/legal 19 0 4 14 12 5 42G &> tmp.cpu5
+time /home/tromp/golegal/legal 19 0 4 14 12 6 42G &> tmp.cpu6
+time /home/tromp/golegal/legal 19 0 4 14 12 7 42G &> tmp.cpu7
+time /home/tromp/golegal/legal 19 0 4 14 12 8 42G &> tmp.cpu8
+time /home/tromp/golegal/legal 19 0 4 14 12 9 42G &> tmp.cpu9
+time /home/tromp/golegal/legal 19 0 4 14 12 10 42G &> tmp.cpu10
+time /home/tromp/golegal/legal 19 0 4 14 12 11 42G &> tmp.cpu11
+/home/tromp/golegal/slegal: line 39: 85666 Killed                  $bin/legal $width $modidx $y $x $ncpus $cpu $msize &>$tmpcpu$cpu
+
+real	19m3.114s
+user	10m8.203s
+sys	2m12.401s
+0.00user 0.00system 19:03.12elapsed 0%CPU (0avgtext+0avgdata 5104maxresident)k
+0inputs+0outputs (0major+606minor)pagefaults 0swaps
+
+real	388m46.086s
+user	288m6.985s
+sys	28m12.389s
+
+real	425m48.947s
+user	323m21.976s
+sys	29m6.035s
+
+real	427m15.742s
+user	324m36.814s
+sys	29m41.335s
+
+real	436m3.791s
+user	331m12.117s
+sys	29m50.113s
+
+real	450m16.744s
+user	336m56.908s
+sys	30m33.535s
+
+real	464m16.769s
+user	348m6.415s
+sys	31m19.716s
+
+real	465m37.217s
+user	344m21.937s
+sys	32m15.846s
+
+real	476m6.563s
+user	363m16.329s
+sys	30m17.378s
+
+real	477m25.193s
+user	354m7.972s
+sys	34m48.844s
+
+real	488m42.449s
+user	381m29.855s
+sys	35m2.360s
+
+real	508m17.751s
+user	381m24.973s
+sys	34m24.996s
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 25001064876 avg 1.000 mod 18446744073709551616
+newillegal 8373948035543993070 needy 15335144112289071736 legal 15187233036776848823 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 24220529869 avg 1.000 mod 18446744073709551616
+newillegal 7989294334852081744 needy 16919314959796057562 legal 3003695659647936946 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 17966304302 avg 1.000 mod 18446744073709551616
+newillegal 2178092669431383066 needy 18197955609733436486 legal 3310282857308093610 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 21579329341 avg 1.000 mod 18446744073709551616
+newillegal 6093492757087647444 needy 219232618247544772 legal 7991691144271073212 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 22079139243 avg 1.000 mod 18446744073709551616
+newillegal 14228179231538391874 needy 625346415098399676 legal 6474654334050046916 at (4,15)
+nohup: ignoring input
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 23797524625 avg 1.000 mod 18446744073709551616
+newillegal 16228208401359988446 needy 13244442764011972484 legal 7071500877461572492 at (4,15)
+21007.56user 2196.06system 7:41:52elapsed 83%CPU (0avgtext+0avgdata 70400928maxresident)k
+0inputs+759056400outputs (0major+4106907minor)pagefaults 0swaps
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 22145431780 avg 1.000 mod 18446744073709551616
+newillegal 6283646203301442904 needy 16260721375379069258 legal 12322016907890399718 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 19212066479 avg 1.000 mod 18446744073709551616
+newillegal 222079613919519300 needy 3470414804948355588 legal 3756578388790007612 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 23052083229 avg 1.000 mod 18446744073709551616
+newillegal 5276638320784697602 needy 7517655619928488568 legal 133566094029626704 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 21619065397 avg 1.000 mod 18446744073709551616
+newillegal 2169632288697379714 needy 11626278396872371692 legal 17766499676412625016 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 20161962425 avg 1.000 mod 18446744073709551616
+newillegal 6850651157246300644 needy 6187806993061322478 legal 542456210274534352 at (4,15)
+width=19 bump=15 tot=354363254912 part=29530271242
+(4,14) size 19892806887 avg 1.000 mod 18446744073709551616
+newillegal 6188066774822234704 needy 10130634400464486122 legal 13135126060288814974 at (4,15)
+nohup: ignoring input
+/home/tromp/golegal/start 19 0
+time /home/tromp/golegal/legal 19 0 4 15 12 0 40G &> tmp.cpu0
+time /home/tromp/golegal/legal 19 0 4 15 12 1 40G &> tmp.cpu1
+time /home/tromp/golegal/legal 19 0 4 15 12 2 40G &> tmp.cpu2
+time /home/tromp/golegal/legal 19 0 4 15 12 3 40G &> tmp.cpu3
+time /home/tromp/golegal/legal 19 0 4 15 12 4 40G &> tmp.cpu4
+time /home/tromp/golegal/legal 19 0 4 15 12 5 40G &> tmp.cpu5
+time /home/tromp/golegal/legal 19 0 4 15 12 6 40G &> tmp.cpu6
+time /home/tromp/golegal/legal 19 0 4 15 12 7 40G &> tmp.cpu7
+time /home/tromp/golegal/legal 19 0 4 15 12 8 40G &> tmp.cpu8
+time /home/tromp/golegal/legal 19 0 4 15 12 9 40G &> tmp.cpu9
+time /home/tromp/golegal/legal 19 0 4 15 12 10 40G &> tmp.cpu10
+time /home/tromp/golegal/legal 19 0 4 15 12 11 40G &> tmp.cpu11
