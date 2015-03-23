@@ -16,7 +16,7 @@
 int main(int argc, char *argv[])
 {
   int ncpus,cpuid,modidx,width,y,x,nextx,tsizelen;
-  uint64_t msize,modulus,totin,nin;
+  uint64_t msize,modulus,nin;
   char c,*tsizearg,inbase[64],outbase[64];
   uint64_t nnewillcnt, newstates[3]; 
   int i,nnew,noutfiles=0;
@@ -96,8 +96,7 @@ int main(int argc, char *argv[])
 
   hidefiles(go, outbase, noutfiles);
 
-  totin = totalread(gin);
-  printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totin);
+  printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totalread(gin));
   if (modulus)
     printf("%lu",modulus);
   else printf("18446744073709551616");
