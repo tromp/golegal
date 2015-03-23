@@ -158,23 +158,32 @@ statecnt *jtinsert(jtset *jts, statecnt *sb)
 
 void sortstates(jtset *jts, int keywidth)
 {
-  int i, digit, npairs, prev;
+  int i, digit, npairs, prev, curr, next;
   locator *bin, *tmp;
   statecnt *sb;
   stateblock *block;
 
-//printf("sorting all blocks\n");
+  // printf("sorting all blocks\n");
   for (digit=jts->locbits; digit<keywidth; digit+=jts->locbits) {
     tmp = jts->stream; jts->stream = jts->insert;  jts->insert = tmp;
     for (bin=jts->stream; bin <= &jts->stream[jts->locmask]; bin++) {
-      if (bin->last != NILBLOCK) {
-        // sortblock(jts, &jts->blocks[bin->last],bin->npairs, jts->insert, digit);
-        for (block=&jts->blocks[bin->last],npairs=bin->npairs; ; block=&jts->blocks[prev],npairs=NPAIRS) {
+      curr = bin->last;
+      if (curr != NILBLOCK) {
+        // reverse block list so we can extract states in ascending order
+        // this used to be done wih recursion, which lead to blowing up the stack
+        for (next = NILBLOCK; curr != NILBLOCK; curr = prev) {
+          block = &jts->blocks[curr];
+          prev = block->previous;
+          block->previous = next;
+          next = curr;
+        }
+        for (; ; block = &jts->blocks[prev]) {
+          prev = block->previous;
+          npairs = prev == NILBLOCK ? bin->npairs : NPAIRS;
           for (i=0; i<npairs; i++) {
             sb = &block->pairs[i];
             jtinsertat(jts, sb, &jts->insert[sb->state >> digit & jts->locmask]);
           }
-          prev = block->previous;
           freeblock(jts,block);
           if (prev == NILBLOCK)
             break;
