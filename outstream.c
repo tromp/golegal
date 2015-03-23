@@ -41,11 +41,9 @@ void setpartition(goout *go)
   allowall();
   tot = bordercnt(go->width,go->bump);
   dmin = go->width*2/3;
-  // delta = tot/(20*go->ncpus); // 2 % of per-cpu workload
-  // if (delta < 1) delta = 1;
   part = tot/go->ncpus;
   printf("width=%d bump=%d tot=%ld part=%ld\n", go->width,go->bump,tot,part);
-  for (i=1; i<=go->ncpus; i++) {
+  for (i=1; i<go->ncpus; i++) {
     go->parts[i-1] = 0;
     lim = tot * i/go->ncpus; // find (roughly) border-class of rank lim
     cum = 0;
@@ -66,7 +64,7 @@ void setpartition(goout *go)
       }
       // printf("  parts[%d]=%lld\n", i-1, go->parts[i-1]);
     }
-    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
+    // printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
   }
 }
 
