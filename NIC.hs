@@ -16,7 +16,12 @@ addyx m (i0,n0,l0,yx) (i1,n1,l1,_) = ((i0+i1) `mod` m,
 
 eqlyx1 (a,_,_) (b,_,_) = a==b
 
-addyx1 (yx,s0,a0) (_,s1,a1) = (yx,s0+s1,a0+a1)
+addyx1 (yx,s0,x0) (_,s1,x1) = (yx,s0+s1,x0+x1)
+
+read1 "-nan" = 0
+read1 "nan" = 0
+read1 a | '.' `elem` a = 1
+read1 a = read a
 
 main = do 
           inp <- getContents
@@ -26,14 +31,11 @@ main = do
                       "/start" `isSuffixOf` bin]
           putStrLn $ "width "++show width++" modidx "++show modidx
           let modulus = moduli !! modidx
-          let sizes = [(yx', size', floor(fromIntegral size' * avg')) |
+          let sizes = [(read yx, read size, read1 xsize) |
                       line <- lines inp,
                       "(" `isPrefixOf` line,
-                      let (yx:_:size:_:avg:_) = words line,
-                      let yx' = read yx :: (Int,Int),
-                      let size' = read size :: Integer,
-                      let avg' = if "nan" `isSuffixOf` avg then 1.0 else read avg :: Double
-                      ]
+                      let (yx:_:size:_:xsize:_) = words line] ::
+                      [((Int,Int),Integer,Integer)]
           let cumsizes = map (foldr1 addyx1) $ groupBy eqlyx1 sizes
           let cnts = [(read newill, read needy, read legal, read yx) |
                       line <- lines inp,
@@ -44,9 +46,8 @@ main = do
           let cnt1 = map (\(i,n,l,yx) ->  i+n+l  `mod` modulus) cumcnts
           let cnt3 = map (\(i,n,l,yx) -> 3*(n+l) `mod` modulus) cumcnts
           let diffs = zipWith (\x y-> (x-y) `mod` modulus) cnt1 (3:cnt3)
-          let check = zipWith (\(i,n,l,yx) d -> (i,n,l,yx,d)) cumcnts diffs
-          let sizecheck = zipWith (\(_,s,a) (i,n,l,yx,d) -> (yx,s,a,i,n,l,d) ) cumsizes check
-          mapM_ print sizecheck
+          let check = zipWith3 (\(yx,s,x) (i,n,l,_) d -> (yx,s,x,l,d) ) cumsizes cumcnts diffs
+          mapM_ print check
           let rowlegal = [l | (i,n,l,(y,x))<-cumcnts, x==0]
           let check19 = zipWith (\x y-> (x-y) `mod` modulus) rowlegal (legal width)
           mapM_ print $ zip [1..] check19
