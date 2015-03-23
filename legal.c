@@ -77,11 +77,11 @@ int main(int argc, char *argv[])
   jts = jtalloc(msize, modulus, LOCBITS);
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
     sn.cnt = mb->cnt;
-//printf("expanding %llo\n", mb->state);
+    // printf("expanding %llo\n", mb->state);
     nnew = expandstate(mb->state, x, newstates);
     for (i=0; i<nnew; i++) {
       sn.state = newstates[i];
-//printf("inserting %llo\n", sn.state);
+      //printf("inserting %llo\n", sn.state);
       jtinsert(jts, &sn);
     }
     if (nnew < 3) // nnew == 2
@@ -97,8 +97,7 @@ int main(int argc, char *argv[])
   hidefiles(go, outbase, noutfiles);
 
   totin = totalread(gin);
-  printf("(%d,%d) size %lu",y,x,nin);
-  printf(" avg %1.3f mod ", totin/(double)nin);
+  printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totin);
   if (modulus)
     printf("%lu",modulus);
   else printf("18446744073709551616");

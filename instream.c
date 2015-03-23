@@ -75,9 +75,11 @@ void fillbuf(goin *gin, statebuf *sb)
 void hpreplace(goin *gin, int i)
 {
   statebuf *sb;
+  uint64_t oldstate;
   int j;
 
-  for (fillbuf(gin, sb=gin->heap[i]); (j=2*i+1) < gin->nstreams; i=j) {
+  oldstate = (sb = gin->heap[i])->state;
+  for (fillbuf(gin, sb); (j=2*i+1) < gin->nstreams; i=j) {
     if (j+1 < gin->nstreams) {
       if (gin->heap[j+1]->state == gin->heap[j]->state) {
         if (gin->heap[j]->fp != 0) {
@@ -95,6 +97,7 @@ void hpreplace(goin *gin, int i)
       fillbuf(gin, sb = gin->heap[j]);
     } else break;
   }
+  assert(sb->state > oldstate);
 }
 
 void hpinsert(goin *gin, int i, statebuf *sb)

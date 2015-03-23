@@ -66,7 +66,7 @@ void setpartition(goout *go)
       }
       // printf("  parts[%d]=%lld\n", i-1, go->parts[i-1]);
     }
-    // printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
+    printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
   }
 }
 
@@ -158,6 +158,7 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
 {
   char formatname[FILENAMELEN];
   statecnt *sc;
+  uint64_t prevstate;
   int i;
 
   if (extension==0) {
@@ -170,10 +171,13 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
 //printf("formatname = %s\n", formatname);
   jtstartfor(jts, 3*go->width);
   sc = jtnext(jts);
+  prevstate = 0;
   for (i=0; i<go->ncpus; i++) {
     sprintf(go->outname,formatname, i);
     opendelta(go);
     while (sc != NULL && sc->state < go->parts[i]) {
+      assert(sc->state > prevstate);
+      prevstate = sc->state;
       writerecord(go, sc->state, sc->cnt);
       sc = jtnext(jts);
     }
