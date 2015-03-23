@@ -11,6 +11,7 @@
 
 typedef struct {
   int previous;
+  int next; // only used in sortblocks to avoid recursion
   statecnt pairs[NPAIRS];
 } stateblock;
 
@@ -156,43 +157,55 @@ statecnt *jtinsert(jtset *jts, statecnt *sb)
   return jtinsertat(jts, sb, &jts->insert[sb->state & jts->locmask]);
 }
 
-void sortstates(jtset *jts, int keywidth)
+void sortblocks(jtset *jts, int curr, int npairs, int shift)
 {
-  int i, digit, npairs, prev, curr, next;
-  locator *bin, *tmp;
+  int i, np, next;
   statecnt *sb;
   stateblock *block;
+
+  // this simple recursive solution, guaranteeing ascending extraction order, blows up the stack
+  // if (curr == NILBLOCK)
+  //   return;
+  // block = &jts->blocks[curr];
+  // sortblocks(jts, block->previous, NPAIRS, shift);
+  // for (i=0; i<npairs; i++) {
+  //   sb = &block->pairs[i];
+  //   jtinsertat(jts, sb, &jts->insert[sb->state >> shift & jts->locmask]);
+  // }
+  // freeblock(jts,block);
+
+  // so instead simulate recursion through next links
+  for (next = NILBLOCK; curr != NILBLOCK; curr = block->previous) {
+    block = &jts->blocks[curr];
+    block->next = next;
+    next = curr;
+  }
+  for (; next != NILBLOCK; freeblock(jts,block)) {
+    block = &jts->blocks[next];
+    np = (next=block->next) == NILBLOCK ? npairs : NPAIRS;
+    for (i=0; i<np; i++) {
+      sb = &block->pairs[i];
+      jtinsertat(jts, sb, &jts->insert[sb->state >> shift & jts->locmask]);
+    }
+  }
+}
+
+void sortstates(jtset *jts, int keywidth)
+{
+  int digit, curr;
+  locator *bin, *tmp;
 
   // printf("sorting all blocks\n");
   for (digit=jts->locbits; digit<keywidth; digit+=jts->locbits) {
     tmp = jts->stream; jts->stream = jts->insert;  jts->insert = tmp;
     for (bin=jts->stream; bin <= &jts->stream[jts->locmask]; bin++) {
-      curr = bin->last;
-      if (curr != NILBLOCK) {
-        // reverse block list so we can extract states in ascending order
-        // this used to be done wih recursion, which lead to blowing up the stack
-        for (next = NILBLOCK; curr != NILBLOCK; curr = prev) {
-          block = &jts->blocks[curr];
-          prev = block->previous;
-          block->previous = next;
-          next = curr;
-        }
-        for (; ; block = &jts->blocks[prev]) {
-          prev = block->previous;
-          npairs = prev == NILBLOCK ? bin->npairs : NPAIRS;
-          for (i=0; i<npairs; i++) {
-            sb = &block->pairs[i];
-            jtinsertat(jts, sb, &jts->insert[sb->state >> digit & jts->locmask]);
-          }
-          freeblock(jts,block);
-          if (prev == NILBLOCK)
-            break;
-        }
+      if ((curr = bin->last) != NILBLOCK) {
+        sortblocks(jts, curr, bin->npairs, digit);
         *bin = nullocator;
       }
     }
   }
-//printf("all blocks sorted\n");
+  // printf("all blocks sorted\n");
 }
 
 void jtstartforat(jtset *jts, locator *bin)

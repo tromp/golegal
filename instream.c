@@ -97,7 +97,7 @@ void hpreplace(goin *gin, int i)
       fillbuf(gin, sb = gin->heap[j]);
     } else break;
   }
-  // assert(sb->state > oldstate);
+  assert(sb->state > oldstate);
 }
 
 void hpinsert(goin *gin, int i, statebuf *sb)
