@@ -14,26 +14,38 @@ my $mod = 2**64-$offs[$modidx];
 print "width $width idx $modidx mod $mod\n";
 
 while(<>) {
-  my ($yx,$size,$ax,$xsize) = /^\S+ size \d+ (avg|xsize) \S+ mod \d+$/;
+  my ($yx,$size,$ax,$xsize) = /^(\S+) size (\d+) (avg|xsize) (\S+) mod \d+$/;
+  $yx =~ s/\b(\d)\b/0\1/g;
   if ($xsize) {
     if ($ax ne 'xsize') {
       $xsize = 1;
     }
-    $cell{$yx} //= {size=>0,xsize=>0,newill=>0,needy=>0,legal=>0};
     $cell{$yx}->{size} += $size;
     $cell{$yx}->{xsize} += $xsize;
   }
-  my ($newill,$needy,$legal,$yx) = /^newillegal \d+ needy \d+ legal (\d+) at (\S+)$/;
+  my ($newill,$needy,$legal,$yx) = /^newillegal (\d+) needy (\d+) legal (\d+) at (\S+)$/;
   if ($yx) {
+    $yx =~ s/\b(\d)\b/0\1/g;
+    $cell{$yx} //= {size=>0,xsize=>0,newill=>0,needy=>0,legal=>0,parts=>0};
     $cell{$yx}->{newill} = ($cell{$yx}->{newill} + $newill) % $mod;
-    $cell{$yx}->{needy} = ($cell{$yx}->{needy} + $newill) % $mod;
-    $cell{$yx}->{legal} = ($cell{$yx}->{legal} + $newill) % $mod;
+    $cell{$yx}->{needy} = ($cell{$yx}->{needy} + $needy) % $mod;
+    $cell{$yx}->{legal} = ($cell{$yx}->{legal} + $legal) % $mod;
+    $cell{$yx}->{parts}++;
   }
 }
-      print "$prevyx size $yxsize xsize $yxxsize\n";
-my $r = 1;
-$r++ until $row[$r];
-for my $y ($r..$#row) {
-  my $diff = abs($row[$y]%$mod - $l19[$y]%$mod);
-  printf "row[%d] legal %s diff %s\n", $y, $row[$y]%$mod, $diff;
+
+my $prevnlstates = 0;
+my $prevparts = 0;
+for my $yx (sort keys %cell) {
+  my $nlstates = $cell{$yx}->{needy}+$cell{$yx}->{legal};
+  my $nstates = $cell{$yx}->{newill} + $nlstates;
+  my $diff = abs(($nstates - 3*$prevnlstates) % $mod);
+  print "parts changed from $prevparts to $cell{$yx}->{parts}\n" unless $prevparts == $cell{$yx}->{parts};
+  printf "$yx size $cell{$yx}->{size} xsize $cell{$yx}->{xsize} diff $diff\n";
+  $prevnlstates = $nlstates;
+  $prevparts = $cell{$yx}->{parts};
+}
+for my $yx (sort grep { /,00/ } keys %cell) {
+  $diff = abs($cell{$yx}->{legal} % $mod - $l19[$y]%$mod);
+  printf "$yx legal %s diff %s\n", $y, $row[$y]%$mod, $diff;
 }
