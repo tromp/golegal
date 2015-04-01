@@ -39,6 +39,7 @@ while(<>) {
 my $prevnlstates = 1;
 my $prevparts = 1;
 for my $yx (sort keys %cell) {
+  last unless $cell{$yx}->{size};
   my $nlstates = $cell{$yx}->{needy}+$cell{$yx}->{legal};
   my $nstates = $cell{$yx}->{newill} + $nlstates;
   my $diff = abs(($nstates - 3*$prevnlstates) % $mod);

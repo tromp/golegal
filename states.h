@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define STARTSTATE 0LL
+
 uint64_t startstate();
 
 void setwidth(int statewidth);

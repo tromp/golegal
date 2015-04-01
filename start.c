@@ -3,59 +3,19 @@
 #include <stdlib.h>
 #include "states.h"
 #include "modulus.h"
+#include "sortstate.h"
+#include "outstream.h"
 
-#define FILENAMELEN 64
-
-uint64_t modulus = 0LL;
-
-#define FINALSTATE (-1LL)
-
-void writedelta(FILE *fp, uint64_t delta, uint64_t cnt)
-{
-  int c;
-
-  do {
-    c = delta & 0x7f;
-    if ((delta >>= 7))
-      c |= 0x80;
-    if (fputc(c, fp) != c) {
-      printf("failed to write delta\n");
-      exit(1);
-    }
-  } while (delta);
-  if (!fwrite(&cnt, sizeof(uint64_t),1,fp)) {
-    printf("failed to write count\n");
-    exit(1);
-  }
-}
-
-void dumpstart(char *basename)
-{
-  FILE *fp;
-  char inname[FILENAMELEN];
-  int notok;
-
-  sprintf(inname,"%s/fromto.0.0/0",basename);
-  fp = fopen(inname, "w");
-  if (!fp) {
-    printf("Failed to open %s for writing\n",inname);
-    exit(1);
-  }
-
-  writedelta(fp, startstate(), 1LL);
-  writedelta(fp, FINALSTATE-startstate(), modulus-1LL);
-  notok = fclose(fp);
-  if (notok) {
-    printf("Failed to close %s\n",inname);
-    exit(1);
-  }
-
-}
+#define FINALSTATE ((uint64_t)-1LL)
 
 int main(int argc, char *argv[])
 {
-  int modidx,wd;
+  int wd,modidx;
+  goout *go;
+  jtset *jts;
+  statecnt sc;
   char outbase[64];
+  uint64_t modulus;
 
   if (argc!=3) {
     printf ("usage: %s width imod\n", argv[0]);
@@ -70,6 +30,11 @@ int main(int argc, char *argv[])
   }
   modulus = -(uint64_t)modulusdeltas[modidx];
   sprintf(outbase,"%d.%d/yx.00.00",wd,modidx);
-  dumpstart(outbase);
+  go = goinit(wd, modulus, 0, 1, 0);
+  jts = jtalloc(65536, modulus, 1);
+  sc.state = startstate();
+  sc.cnt = 1L;
+  jtinsert(jts, &sc);
+  dumpstates(go, jts, outbase, 0, FINALSTATE);
   return 0;
 }

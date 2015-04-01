@@ -3,13 +3,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <strings.h>
+#include <glob.h>
 #include "instream.h"
 #include "modadd.h"
 
 #define MAXSTREAMS 1024
-#ifndef FANIN
-#define FANIN 1
-#endif
 
 struct goin {
   uint64_t modulus;
@@ -17,7 +16,7 @@ struct goin {
   statebuf stream[MAXSTREAMS];
   statebuf *heap[MAXSTREAMS];
   int nstreams;
-  int ncpus;
+  int incpus;
   int cpuid;
 };
 
@@ -126,13 +125,14 @@ void deletemin(goin *gin)
   hpreplace(gin, 0);
 }
 
-goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
-
+goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus) {
   char inname[FILENAMELEN];
   statebuf *sb;
   FILE *fp;
-  int from,to,j;
+  int from,to,j,nscan;
   goin *gin;
+  glob_t stateglob;
+  uint64_t prevstate,state;
 
   gin = (goin *)calloc(1,sizeof(goin));
   if (gin == NULL) {
@@ -140,25 +140,44 @@ goin *openstreams(char *inbase, int ncpus, int cpuid, uint64_t modulus) {
     exit(1);
   }
   gin->totalin = 0LL;
-  gin->ncpus = ncpus;
+  gin->incpus = incpus;
   gin->cpuid = cpuid;
   gin->modulus = modulus;
   sb = &gin->stream[gin->nstreams = 0];
-  for (from=0; from<FANIN*ncpus; from++) {
-    for (to=cpuid; to<FANIN*ncpus; to+=ncpus) {
-      for (j=0; ; j++) {
-        sprintf(inname,"%s/fromto.%d.%d/%d",inbase,from,to,j); 
-        if (!(fp = fopen(inname, "r"))) {
-          // printf("Failed to open %s\n",inname);
-          break;
+  int limto = incpus < ncpus ? ncpus : incpus;
+  for (from=0; from<incpus; from++) {
+    for (to=cpuid; to<limto; to+=ncpus) {
+      prevstate = 0L;
+      for (j=0; prevstate!=FINALSTATE; j++) {
+        sprintf(inname,"%s/fromto.%d.%d/%d.*",inbase,from,to,j); 
+        stateglob.gl_matchc = 2;
+        glob(inname, GLOB_LIMIT, NULL, &stateglob);
+        if (stateglob.gl_matchc != 1) {
+          printf ("%d files matching %s\n", stateglob.gl_matchc, inname);
+          exit(1);
+        }
+        if (!(fp = fopen(stateglob.gl_pathv[0], "r"))) {
+          printf("Failed to open %s\n",stateglob.gl_pathv[0]);
+          exit(1);
         }
         if (gin->nstreams == MAXSTREAMS) {
           printf ("#inputfiles exceeds MAXSTREAMS (%d)\n", MAXSTREAMS);
           exit(1);
         }
-        // printf("opened %s\n", inname);
+        nscan = sscanf(rindex(stateglob.gl_pathv[0],'.')+1, "%lo", &state); 
+        if (nscan != 1) {
+          printf ("No state suffix in %s\n", stateglob.gl_matchc);
+          exit(1);
+        }
+        if (state <= prevstate) {
+          printf ("States %lo %lo out of order.\n", prevstate, state);
+          exit(1);
+        }
+        prevstate = state;
+        // printf("opened %s state %lo\n", stateglob.gl_pathv[0],state);
         sb->fp = fp;
-        strncpy(sb->fname, inname, FILENAMELEN);
+        strncpy(sb->fname, stateglob.gl_pathv[0], FILENAMELEN);
+        globfree(&stateglob);
         hpinsert(gin, gin->nstreams++, sb++);
       }
     }
@@ -178,10 +197,10 @@ int main(int argc, char *argv[])
   char inbase[64];
   statebuf *mb;
   goin gin;
-  int ncpus, cpuid;
+  int incpus, ncpus, cpuid;
 
-  if (argc!=7) {
-    fprintf(stderr, "usage: %s width imod y x ncpus cpuid\n", argv[0]);
+  if (argc!=8) {
+    fprintf(stderr, "usage: %s width imod y x incpus ncpus cpuid\n", argv[0]);
     exit(1);
   }
   wd = atoi(argv[1]);
@@ -193,19 +212,20 @@ int main(int argc, char *argv[])
   modulus = -(uint64_t)modulusdeltas[modidx];
   y = atoi(argv[3]);
   x = atoi(argv[4]);
-  ncpus = atoi(argv[5]);
+  incpus = atoi(argv[5]);
+  ncpus = atoi(argv[6]);
   if (ncpus < 1 || ncpus > MAXCPUS) {
     fprintf (stderr, "#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);
     exit(1);
   }
-  cpuid = atoi(argv[6]);
+  cpuid = atoi(argv[7]);
   if (cpuid < 0 || cpuid >= ncpus) {
     fprintf (stderr, "cpuid %d not in range [0,%d]\n", ncpus, ncpus-1);
     exit(1);
   }
 
   sprintf(inbase,"%d.%d/yx.%02d.%02d",wd,modidx,y,x);
-  gin = openstreams(inbase, ncpus, cpuid, modulus))
+  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus))
   if (!nstreams(gin))
     fprintf (stderr, "wanring: no input files\n");
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {

@@ -122,7 +122,7 @@ void writerecord(goout *go, uint64_t state, uint64_t cnt)
 {
   uint64_t delta = state - go->bufstate;
 
-  assert(delta > 0);
+  assert(!go->bufstate || delta > 0);
   writedelta(go, delta);
   if (!fwrite(&cnt, sizeof(uint64_t),1,go->fpdelta)) {
     printf("failed to write count\n");
@@ -152,20 +152,20 @@ void closedelta(goout *go)
   modadd(go->modulus, &go->cumlegal, go->nlegal);
 }
 
-void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
+void dumpstates(goout *go, jtset *jts, char *outbase, int iteration, uint64_t state)
 {
   char formatname[FILENAMELEN];
   statecnt *sc;
   uint64_t prevstate;
   int i;
 
-  if (extension==0) {
+  if (iteration==0) {
     for (i=0; i<go->ncpus; i++) {
       sprintf(formatname,"%s/fromto.%d.%d", outbase, go->cpuid, i);
       mkdir(formatname, 0755);
     }
   }
-  sprintf(formatname,"%s/fromto.%d.%%d/%d", outbase, go->cpuid, extension);
+  sprintf(formatname,"%s/fromto.%d.%%d/%d.%lo", outbase, go->cpuid, iteration, state);
 //printf("formatname = %s\n", formatname);
   jtstartfor(jts, 3*go->width);
   sc = jtnext(jts);
@@ -174,7 +174,7 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
     sprintf(go->outname,formatname, i);
     opendelta(go);
     while (sc != NULL && sc->state < go->parts[i]) {
-      assert(sc->state > prevstate);
+      assert(sc->state==STARTSTATE || sc->state > prevstate);
       prevstate = sc->state;
       writerecord(go, sc->state, sc->cnt);
       sc = jtnext(jts);
@@ -183,19 +183,6 @@ void dumpstates(goout *go, jtset *jts, char *outbase, int extension)
   }
   assert(sc == NULL);
   assert(jtempty(jts));
-}
-
-void hidefiles(goout *go, char *basename, int extension)
-{
-  char outname[FILENAMELEN],bak[FILENAMELEN];
-  int i;
-
-  for (i=0; i<go->ncpus; i++) {
-    sprintf(outname,"%s/fromto.%d.%d/%d", basename, go->cpuid, i, extension);
-    sprintf(bak,"%s/fromto.%d.%d/%d.bak", basename, go->cpuid, i, extension);
-    if (rename(outname, bak) == 0)
-      printf("%s renamed to %s\n",outname, bak);
-  }
 }
 
 uint64_t needywritten(goout *go)
@@ -273,13 +260,11 @@ int main(int argc, char *argv[])
   while (fread(&sb.state,sizeof(uint64_t),2,stdin)==2) {
     jtinsert(jts, &sb);
     if (jtfull(jts))
-      dumpstates(go, jts, outbase, noutfiles++);
+      dumpstates(go, jts, outbase, noutfiles++, sb.state);
   }
-  if (!jtempty(jts))
-    dumpstates(go, jts, outbase, noutfiles++);
+  dumpstates(go, jts, outbase, noutfiles++, FINALSTATE);
   jtfree(jts);
 
-  hidefiles(go, outbase, noutfiles);
   if (nextx==0)
     printf("legal(%dx%d) %% %llu = %llu\n",y+1,width,modulus,legalwritten(go));
   return 0;

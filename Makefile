@@ -4,8 +4,8 @@ GFLAGS = -Wall -g -m64
 
 all:   	start legal legalg tar NIC
 
-start:	start.c states.c modulus.h Makefile
-	cc $(CFLAGS) -o start start.c states.c
+start:	start.c outstream.c modadd.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
+	cc $(CFLAGS) -o start start.c states.c sortstate.c outstream.c partition.c modadd.c
 
 instream:	instream.c instream.h modadd.h modulus.h Makefile
 	cc -DMAININSTREAM $(CFLAGS) -o instream instream.c modadd.c

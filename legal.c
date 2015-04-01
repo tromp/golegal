@@ -15,7 +15,7 @@
 
 int main(int argc, char *argv[])
 {
-  int ncpus,cpuid,modidx,width,y,x,nextx,tsizelen;
+  int incpus,ncpus,cpuid,modidx,width,y,x,nextx,tsizelen;
   uint64_t msize,modulus,nin;
   char c,*tsizearg,inbase[64],outbase[64];
   uint64_t nnewillcnt, newstates[3]; 
@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
   goout *go;
 
   assert(sizeof(uint64_t)==8);
-  if (argc!=8) {
-    printf("usage: %s width modulo_index y x ncpus cpuid maxtreesize[kKmMgG]\n",argv[0]);
+  if (argc!=9) {
+    printf("usage: %s width modulo_index y x incpus ncpus cpuid maxtreesize[kKmMgG]\n",argv[0]);
     exit(1);
   }
   setwidth(width = atoi(argv[1]));
@@ -41,17 +41,18 @@ int main(int argc, char *argv[])
   y = atoi(argv[3]);
   x = atoi(argv[4]);
   nextx = (x+1) % width;
-  ncpus = atoi(argv[5]);
+  incpus = atoi(argv[5]);
+  ncpus = atoi(argv[6]);
   if (ncpus < 1 || ncpus > MAXCPUS) {
     printf ("#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);
     exit(1);
   }
-  cpuid = atoi(argv[6]);
+  cpuid = atoi(argv[7]);
   if (cpuid < 0 || cpuid >= ncpus) {
     printf("cpuid %d not in range [0,%d]\n", ncpus, ncpus-1);
     exit(1);
   }
-  tsizelen = strlen(tsizearg = argv[7]);
+  tsizelen = strlen(tsizearg = argv[8]);
   if (!isdigit(c = tsizearg[tsizelen-1]))
     tsizearg[tsizelen-1] = '\0';
    msize = atol(tsizearg);
@@ -67,34 +68,31 @@ int main(int argc, char *argv[])
   }
 
   sprintf(inbase,"%d.%d/yx.%02d.%02d",width,modidx,y,x); 
-  gin = openstreams(inbase, ncpus, cpuid, modulus);
-  if (!nstreams(gin))
-    return 0;
+  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus);
   go = goinit(width, modulus, nextx, ncpus, cpuid);
   sprintf(outbase,"%d.%d/yx.%02d.%02d",width,modidx,y+(nextx==0),nextx);
 
   nnewillcnt = 0LL;
   jts = jtalloc(msize, modulus, LOCBITS);
-  for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
-    sn.cnt = mb->cnt;
-    // printf("expanding %llo\n", mb->state);
-    nnew = expandstate(mb->state, x, newstates);
-    for (i=0; i<nnew; i++) {
-      sn.state = newstates[i];
-      //printf("inserting %llo\n", sn.state);
-      jtinsert(jts, &sn);
+  if (nstreams(gin)) {
+    for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
+      sn.cnt = mb->cnt;
+      // printf("expanding %llo\n", mb->state);
+      nnew = expandstate(mb->state, x, newstates);
+      for (i=0; i<nnew; i++) {
+        sn.state = newstates[i];
+        //printf("inserting %llo\n", sn.state);
+        jtinsert(jts, &sn);
+      }
+      if (nnew < 3) // nnew == 2
+        modadd(modulus, &nnewillcnt, mb->cnt);
+      if (jtfull(jts))
+        dumpstates(go, jts, outbase, noutfiles++, mb->state);
+      deletemin(gin);
     }
-    if (nnew < 3) // nnew == 2
-      modadd(modulus, &nnewillcnt, mb->cnt);
-    if (jtfull(jts))
-      dumpstates(go, jts, outbase, noutfiles++);
-    deletemin(gin);
   }
-  if (!jtempty(jts))
-    dumpstates(go, jts, outbase, noutfiles++);
+  dumpstates(go, jts, outbase, noutfiles++, FINALSTATE);
   jtfree(jts);
-
-  hidefiles(go, outbase, noutfiles);
 
   printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totalread(gin));
   if (modulus)

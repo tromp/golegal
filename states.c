@@ -52,8 +52,6 @@ void setwidth(int wd)
   twothirdmask = (1LL << (3*(twothirdwidth = statewidth - statewidth/3))) - 1LL;
 }
 
-#define STARTSTATE 0LL
-
 uint64_t startstate()
 {
   return STARTSTATE;
