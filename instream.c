@@ -153,8 +153,16 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
         stateglob.gl_matchc = 2;
         glob(inname, GLOB_LIMIT, NULL, &stateglob);
         if (stateglob.gl_matchc != 1) {
+#ifdef OPENOLD
+          sprintf(inname,"%s/fromto.%d.%d/%d",inbase,from,to,j); 
+          if (!(fp = fopen(inname, "r")))
+            break;
+          strncpy(sb->fname, inname, FILENAMELEN);
+          goto oldcont;
+#else
           printf ("%d files matching %s\n", stateglob.gl_matchc, inname);
           exit(1);
+#endif
         }
         if (!(fp = fopen(stateglob.gl_pathv[0], "r"))) {
           printf("Failed to open %s\n",stateglob.gl_pathv[0]);
@@ -174,10 +182,11 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
           exit(1);
         }
         prevstate = state;
-        // printf("opened %s state %lo\n", stateglob.gl_pathv[0],state);
-        sb->fp = fp;
         strncpy(sb->fname, stateglob.gl_pathv[0], FILENAMELEN);
         globfree(&stateglob);
+oldcont:
+        // printf("opened %s state %lo\n", sb->fname, state);
+        sb->fp = fp;
         hpinsert(gin, gin->nstreams++, sb++);
       }
     }
