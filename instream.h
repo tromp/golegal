@@ -2,7 +2,7 @@
 
 #define MAXCPUS 32
 #define FINALSTATE ((uint64_t)-1LL)
-#define FILENAMELEN 64
+#define FILENAMELEN 96
 
 typedef struct {
   FILE *fp;
