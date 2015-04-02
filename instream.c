@@ -150,9 +150,8 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
       prevstate = 0L;
       for (j=0; prevstate!=FINALSTATE; j++) {
         sprintf(inname,"%s/fromto.%d.%d/%d.*",inbase,from,to,j); 
-        stateglob.gl_matchc = 2;
-        glob(inname, GLOB_LIMIT, NULL, &stateglob);
-        if (stateglob.gl_matchc != 1) {
+        glob(inname, GLOB_NOSORT, NULL, &stateglob);
+        if (stateglob.gl_pathc != 1) {
 #ifdef OPENOLD
           sprintf(inname,"%s/fromto.%d.%d/%d",inbase,from,to,j); 
           if (!(fp = fopen(inname, "r")))
@@ -160,7 +159,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
           strncpy(sb->fname, inname, FILENAMELEN);
           goto oldcont;
 #else
-          printf ("%d files matching %s\n", stateglob.gl_matchc, inname);
+          printf ("%d files matching %s\n", stateglob.gl_pathc, inname);
           exit(1);
 #endif
         }
@@ -174,7 +173,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
         }
         nscan = sscanf(rindex(stateglob.gl_pathv[0],'.')+1, "%lo", &state); 
         if (nscan != 1) {
-          printf ("No state suffix in %s\n", stateglob.gl_matchc);
+          printf ("No state suffix in %s\n", stateglob.gl_pathv[0]);
           exit(1);
         }
         if (state <= prevstate) {
@@ -183,8 +182,8 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
         }
         prevstate = state;
         strncpy(sb->fname, stateglob.gl_pathv[0], FILENAMELEN);
-        globfree(&stateglob);
 oldcont:
+        globfree(&stateglob);
         // printf("opened %s state %lo\n", sb->fname, state);
         sb->fp = fp;
         hpinsert(gin, gin->nstreams++, sb++);

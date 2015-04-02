@@ -72,10 +72,10 @@ int main(int argc, char *argv[])
   go = goinit(width, modulus, nextx, ncpus, cpuid);
   sprintf(outbase,"%d.%d/yx.%02d.%02d",width,modidx,y+(nextx==0),nextx);
 
-  nnewillcnt = 0LL;
+  nnewillcnt = nin = 0LL;
   jts = jtalloc(msize, modulus, LOCBITS);
   if (nstreams(gin)) {
-    for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
+    for (; (mb = minstream(gin))->state != FINALSTATE; nin++) {
       sn.cnt = mb->cnt;
       // printf("expanding %llo\n", mb->state);
       nnew = expandstate(mb->state, x, newstates);
