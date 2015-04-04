@@ -13,6 +13,7 @@
 struct goin {
   uint64_t modulus;
   uint64_t totalin;
+  uint64_t skipupto;
   statebuf stream[MAXSTREAMS];
   statebuf *heap[MAXSTREAMS];
   int nstreams;
@@ -50,25 +51,29 @@ void fillbuf(goin *gin, statebuf *sb)
   uint64_t delta;
   int notok;
 
-  delta = readdelta(sb);
-  sb->state += delta;
-  if (!fread(&sb->cnt,sizeof(uint64_t),1,sb->fp)) {
-    printf("failed to read state %lo count from file %s\n", sb->state, sb->fname);
-    exit(1);
-  }
-  modadd(gin->modulus, &sb->cumcnt, sb->cnt);
-  if (sb->state == FINALSTATE) {
-    notok = fclose(sb->fp);
-    if (notok) {
-      printf("Failed to close %s after reading\n",sb->fname);
+  do {
+    delta = readdelta(sb);
+    sb->state += delta;
+    if (!fread(&sb->cnt,sizeof(uint64_t),1,sb->fp)) {
+      printf("failed to read state %lo count from file %s\n", sb->state, sb->fname);
       exit(1);
     }
-    sb->fp = NULL;
-    if (sb->cumcnt) {
-      printf("file %s corrupt; cumcnt=%lu\n", sb->fname, sb->cumcnt);
-      exit(1);
+    modadd(gin->modulus, &sb->cumcnt, sb->cnt);
+    if (sb->state == FINALSTATE) {
+      notok = fclose(sb->fp);
+      if (notok) {
+        printf("Failed to close %s after reading\n",sb->fname);
+        exit(1);
+      }
+      sb->fp = NULL;
+      if (sb->cumcnt) {
+        printf("file %s corrupt; cumcnt=%lu\n", sb->fname, sb->cumcnt);
+        exit(1);
+      }
+      return;
     }
-  } else gin->totalin++;
+    gin->totalin++;
+  } while (sb->state <= gin->skipupto);
 }
 
 void hpreplace(goin *gin, int i)
@@ -125,7 +130,7 @@ void deletemin(goin *gin)
   hpreplace(gin, 0);
 }
 
-goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus) {
+goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus, uint64_t skipupto) {
   char inname[FILENAMELEN];
   statebuf *sb;
   FILE *fp;
@@ -143,6 +148,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
   gin->incpus = incpus;
   gin->cpuid = cpuid;
   gin->modulus = modulus;
+  gin->skipupto = skipupto;
   sb = &gin->stream[gin->nstreams = 0];
   int limto = incpus < ncpus ? ncpus : incpus;
   for (from=0; from<incpus; from++) {

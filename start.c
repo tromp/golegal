@@ -14,7 +14,6 @@ int main(int argc, char *argv[])
   goout *go;
   jtset *jts;
   statecnt sc;
-  char outbase[64];
   uint64_t modulus;
 
   if (argc!=3) {
@@ -29,12 +28,11 @@ int main(int argc, char *argv[])
     exit(1);
   }
   modulus = -(uint64_t)modulusdeltas[modidx];
-  sprintf(outbase,"%d.%d/yx.00.00",wd,modidx);
-  go = goinit(wd, modulus, 0, 1, 0);
+  go = goinit(wd, modidx, modulus, 0, 0, 1, 0);
   jts = jtalloc(65536, modulus, 1);
   sc.state = startstate();
   sc.cnt = 1L;
   jtinsert(jts, &sc);
-  dumpstates(go, jts, outbase, 0, FINALSTATE);
+  dumpstates(go, jts, 0, FINALSTATE);
   return 0;
 }

@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -17,9 +18,9 @@ int main(int argc, char *argv[])
 {
   int incpus,ncpus,cpuid,modidx,width,y,x,nextx,tsizelen;
   uint64_t msize,modulus,nin;
-  char c,*tsizearg,inbase[64],outbase[64];
-  uint64_t nnewillcnt, newstates[3]; 
-  int i,nnew,noutfiles=0;
+  char c,*tsizearg,inbase[64];
+  uint64_t laststate, nnewillcnt, newstates[3]; 
+  int i,nnew,noutfiles;
   statebuf *mb;
   statecnt sn;
   jtset *jts;
@@ -27,8 +28,8 @@ int main(int argc, char *argv[])
   goout *go;
 
   assert(sizeof(uint64_t)==8);
-  if (argc!=9) {
-    printf("usage: %s width modulo_index y x incpus ncpus cpuid maxtreesize[kKmMgG]\n",argv[0]);
+  if (argc!=9 && argc!=11) {
+    printf("usage: %s width modulo_index y x incpus ncpus cpuid maxtreesize[kKmMgG] [noutfiles laststate]\n",argv[0]);
     exit(1);
   }
   setwidth(width = atoi(argv[1]));
@@ -66,16 +67,23 @@ int main(int argc, char *argv[])
     printf("memsize %ld too small for comfort.\n", msize);
     exit(1);
   }
+  if (argc > 9) {
+    noutfiles = atoi(argv[9]);
+    laststate = strtol(argv[10],NULL,8);
+    printf("skipping %d output files and states up to %lo\n", noutfiles, laststate);
+  } else {
+    noutfiles = 0;
+    laststate = 0L;
+  }
 
   sprintf(inbase,"%d.%d/yx.%02d.%02d",width,modidx,y,x); 
-  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus);
-  go = goinit(width, modulus, nextx, ncpus, cpuid);
-  sprintf(outbase,"%d.%d/yx.%02d.%02d",width,modidx,y+(nextx==0),nextx);
+  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus, laststate);
+  go = goinit(width, modidx, modulus, y+!nextx, nextx, ncpus, cpuid);
 
   nnewillcnt = nin = 0LL;
   jts = jtalloc(msize, modulus, LOCBITS);
   if (nstreams(gin)) {
-    for (; (mb = minstream(gin))->state != FINALSTATE; nin++) {
+    for (; (mb = minstream(gin))->state != FINALSTATE; nin++,deletemin(gin)) {
       sn.cnt = mb->cnt;
       // printf("expanding %llo\n", mb->state);
       nnew = expandstate(mb->state, x, newstates);
@@ -87,11 +95,10 @@ int main(int argc, char *argv[])
       if (nnew < 3) // nnew == 2
         modadd(modulus, &nnewillcnt, mb->cnt);
       if (jtfull(jts))
-        dumpstates(go, jts, outbase, noutfiles++, mb->state);
-      deletemin(gin);
+        dumpstates(go, jts, noutfiles++, mb->state);
     }
   }
-  dumpstates(go, jts, outbase, noutfiles++, FINALSTATE);
+  dumpstates(go, jts, noutfiles++, FINALSTATE);
   jtfree(jts);
 
   printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totalread(gin));

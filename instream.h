@@ -18,4 +18,4 @@ uint64_t nstreams(goin *gin);
 uint64_t totalread(goin *gin);
 void deletemin(goin *gin);
 statebuf *minstream(goin *gin);
-goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus);
+goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus, uint64_t skipupto);

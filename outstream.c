@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include "states.h"
 #include "partition.h"
 #include "sortstate.h"
@@ -20,7 +21,9 @@ struct goout {
   int ncpus;
   int cpuid;
   uint64_t parts[MAXCPUS];
+  char outbase[FILENAMELEN];
   char outname[FILENAMELEN];
+  char tmpoutname[FILENAMELEN];
   uint64_t bufstate;
   FILE *fpdelta;
   uint64_t nneedy;
@@ -68,13 +71,15 @@ void setpartition(goout *go)
   }
 }
 
-goout *goinit(int width, uint64_t modulus, int bump, int ncpus,int cpuid)
+goout *goinit(int width, int modidx, uint64_t modulus, int y, int bump, int ncpus,int cpuid)
 {
   goout *go;
+  char formatname[FILENAMELEN];
+  int i,rc;
 
   go = (goout *)calloc(1,sizeof(goout));
   if (go == NULL) {
-    printf("Failed to allocate goin record of size %d\n", (int)sizeof(goout));
+    printf("Failed to allocate goout record of size %d\n", (int)sizeof(goout));
     exit(1);
   }
   go->width = width;
@@ -84,23 +89,27 @@ goout *goinit(int width, uint64_t modulus, int bump, int ncpus,int cpuid)
   go->cpuid = cpuid;
   go->cumneedy = go->cumlegal = 0LL;
   setpartition(go);
+  sprintf(go->outbase,"%d.%d/yx.%02d.%02d",width,modidx,y,bump);
+  for (i=0; i<ncpus; i++) {
+    sprintf(formatname,"%s/fromto.%d.%d", go->outbase, cpuid, i);
+    rc = mkdir(formatname, 0755);
+    if (rc && errno==EEXIST) {
+      // possible determination of lastest processed state
+    }
+  }
   return go;
 }
 
 void opendelta(goout *go) // assumes outname has been set appropriately
 {
-  go->fpdelta = fopen(go->outname, "w");
+  sprintf(go->tmpoutname,"%s.tmp", go->outname);
+  go->fpdelta = fopen(go->tmpoutname, "w");
   if (!go->fpdelta) {
-    printf("Failed to open %s for writing\n",go->outname);
+    perror("Failed to open for writing");
+    puts(go->tmpoutname);
     exit(1);
   }
   go->bufstate = go->nneedy = go->nlegal = 0LL;
-}
-
-void opendelta2(goout *go, char *fname)
-{
-  strncpy(go->outname, fname, FILENAMELEN);
-  opendelta(go);
 }
 
 void writedelta(goout *go, uint64_t delta)
@@ -145,28 +154,27 @@ void closedelta(goout *go)
     exit(1);
   }
   if (fclose(go->fpdelta)) {
-    printf("Failed to close %s after writing\n",go->outname);
+    perror("Failed to close");
+    puts(go->tmpoutname);
+    exit(1);
+  }
+  if (rename(go->tmpoutname, go->outname)) {
+    perror("Failed to rename");
+    puts(go->tmpoutname);
     exit(1);
   }
   modadd(go->modulus, &go->cumneedy, go->nneedy);
   modadd(go->modulus, &go->cumlegal, go->nlegal);
 }
 
-void dumpstates(goout *go, jtset *jts, char *outbase, int iteration, uint64_t state)
+void dumpstates(goout *go, jtset *jts, int iteration, uint64_t state)
 {
   char formatname[FILENAMELEN];
   statecnt *sc;
   uint64_t prevstate;
   int i;
 
-  if (iteration==0) {
-    for (i=0; i<go->ncpus; i++) {
-      sprintf(formatname,"%s/fromto.%d.%d", outbase, go->cpuid, i);
-      mkdir(formatname, 0755);
-    }
-  }
-  sprintf(formatname,"%s/fromto.%d.%%d/%d.%lo", outbase, go->cpuid, iteration, state);
-//printf("formatname = %s\n", formatname);
+  sprintf(formatname,"%s/fromto.%d.%%d/%d.%lo", go->outbase, go->cpuid, iteration, state);
   jtstartfor(jts, 3*go->width);
   sc = jtnext(jts);
   prevstate = 0;
@@ -204,7 +212,7 @@ int main(int argc, char *argv[])
 {
   int modidx,y,x,nextx,tsizelen;
   long msize;
-  char c,*tsizearg,outbase[FILENAMELEN];
+  char c,*tsizearg;
   int width, noutfiles=0;
   jtset *jts;
   statecnt sb;
@@ -226,7 +234,6 @@ int main(int argc, char *argv[])
   y = atoi(argv[3]);
   x = atoi(argv[4]);
   nextx = (x+1) % width;
-  sprintf(outbase,"%d.%d/yx.%02d.%02d",width,modidx,y+(nextx==0),nextx);
   ncpus = atoi(argv[5]);
   if (ncpus < 1 || ncpus > MAXCPUS) {
     printf("#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);
@@ -237,7 +244,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "cpuid %d not in range [0,%d]\n", ncpus, ncpus-1);
     exit(1);
   }
-  go = goinit(width, modulus, nextx, ncpus, cpuid);
+  go = goinit(width, modidx, modulus, y+!nextx, nextx, ncpus, cpuid);
 
   exit(0);
 
@@ -260,9 +267,9 @@ int main(int argc, char *argv[])
   while (fread(&sb.state,sizeof(uint64_t),2,stdin)==2) {
     jtinsert(jts, &sb);
     if (jtfull(jts))
-      dumpstates(go, jts, outbase, noutfiles++, sb.state);
+      dumpstates(go, jts, noutfiles++, sb.state);
   }
-  dumpstates(go, jts, outbase, noutfiles++, FINALSTATE);
+  dumpstates(go, jts, noutfiles++, FINALSTATE);
   jtfree(jts);
 
   if (nextx==0)
