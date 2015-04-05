@@ -165,7 +165,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
           strncpy(sb->fname, inname, FILENAMELEN);
           goto oldcont;
 #else
-          printf ("%d files matching %s\n", stateglob.gl_pathc, inname);
+          printf ("%d files matching %s\n", (int)stateglob.gl_pathc, inname);
           exit(1);
 #endif
         }
@@ -188,7 +188,9 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
         }
         prevstate = state;
         strncpy(sb->fname, stateglob.gl_pathv[0], FILENAMELEN);
+#ifdef OPENOLD
 oldcont:
+#endif
         globfree(&stateglob);
         // printf("opened %s state %lo\n", sb->fname, state);
         sb->fp = fp;

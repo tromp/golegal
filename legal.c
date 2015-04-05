@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
   goout *go;
 
   assert(sizeof(uint64_t)==8);
-  if (argc!=9 && argc!=11) {
-    printf("usage: %s width modulo_index y x incpus ncpus cpuid maxtreesize[kKmMgG] [noutfiles laststate]\n",argv[0]);
+  if (argc!=9 && argc!=10) {
+    printf("usage: %s width modulo_index y x incpus ncpus cpuid maxtreesize[kKmMgG] [lastfile]\n",argv[0]);
     exit(1);
   }
   setwidth(width = atoi(argv[1]));
@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
   if (argc > 9) {
-    noutfiles = atoi(argv[9]);
-    laststate = strtol(argv[10],NULL,8);
+    assert(sscanf(argv[9],"%d.%lo", &noutfiles, &laststate) == 2);
+    noutfiles++;
     printf("skipping %d output files and states up to %lo\n", noutfiles, laststate);
   } else {
     noutfiles = 0;
