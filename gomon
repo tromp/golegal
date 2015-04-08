@@ -1,9 +1,9 @@
 #!/bin/sh
 while true;
   do top -u $USER -n 1| head -20;
-  a=`ls -td $1.$2/yx.$3*/fromto.* | head -3 | tail -1`;
-  echo $a;
-  ls -rt $a;
+  a=`ls -td $1.$2/yx.$3*/fromto.* | head -1`
+  echo $a
+  ls -lt $a | head -2
   du -s --block-size=1G $1.$2/yx.$3*;
   sleep 300;
 done
