@@ -1,78 +1,77 @@
-(00,01) size 2 xsize 8 diff 0
-parts changed from 1 to 8
-(00,02) size 5 xsize 8 diff 0
-(00,03) size 14 xsize 8 diff 0
-(00,04) size 41 xsize 8 diff 0
-(00,05) size 122 xsize 8 diff 0
-(00,06) size 365 xsize 8 diff 0
-(00,07) size 1094 xsize 8 diff 0
-(00,08) size 3281 xsize 8 diff 0
-(00,09) size 9842 xsize 8 diff 0
-(00,10) size 29525 xsize 8 diff 0
-(00,11) size 88574 xsize 8 diff 0
-(00,12) size 265721 xsize 8 diff 0
-(00,13) size 797162 xsize 8 diff 0
-(00,14) size 2391485 xsize 8 diff 0
-(00,15) size 7174454 xsize 8 diff 0
-(00,16) size 21523361 xsize 8 diff 0
-(00,17) size 64570082 xsize 8 diff 0
-(00,18) size 193710245 xsize 8 diff 0
-(01,00) size 581130734 xsize 8 diff 0
-(01,01) size 968551224 xsize 8 diff 0
-(01,02) size 1248354915 xsize 8 diff 0
-(01,03) size 1549681979 xsize 8 diff 0
-(01,04) size 1872532447 xsize 8 diff 0
-(01,05) size 2247198571 xsize 8 diff 0
-(01,06) size 2687763949 xsize 8 diff 0
-(01,07) size 3209021823 xsize 8 diff 0
-(01,08) size 3829725502 xsize 8 diff 0
-(01,09) size 4570570769 xsize 8 diff 0
-(01,10) size 5455611910 xsize 8 diff 0
-(01,11) size 6513369915 xsize 8 diff 0
-(01,12) size 7778250701 xsize 8 diff 0
-(01,13) size 9293295015 xsize 8 diff 0
-(01,14) size 11117241273 xsize 8 diff 0
-(01,15) size 13346673297 xsize 8 diff 0
-(01,16) size 16191686752 xsize 8 diff 0
-(01,17) size 20242633946 xsize 8 diff 0
-(01,18) size 27420640118 xsize 8 diff 0
-(02,00) size 21522651307 xsize 8 diff 0
-(02,01) size 30986308034 xsize 8 diff 0
-(02,02) size 31298623903 xsize 8 diff 0
-(02,03) size 31693832491 xsize 8 diff 0
-(02,04) size 32408870046 xsize 8 diff 0
-(02,05) size 33278325617 xsize 8 diff 0
-(02,06) size 34338606328 xsize 8 diff 0
-(02,07) size 35581728837 xsize 8 diff 0
-(02,08) size 37004817149 xsize 8 diff 0
-(02,09) size 38608152181 xsize 8 diff 0
-(02,10) size 40386888039 xsize 8 diff 0
-(02,11) size 42334433531 xsize 8 diff 0
-(02,12) size 44442197991 xsize 8 diff 0
-(02,13) size 46701574497 xsize 8 diff 0
-(02,14) size 49105278599 xsize 8 diff 0
-(02,15) size 51605344588 xsize 8 diff 0
-(02,16) size 54143854082 xsize 8 diff 0
-(02,17) size 57213368302 xsize 8 diff 0
-(02,18) size 61228340733 xsize 8 diff 0
-(03,00) size 40881769487 xsize 8 diff 0
-(03,01) size 58002999560 xsize 8 diff 0
-(03,02) size 59334643238 xsize 8 diff 0
-(03,03) size 60469963159 xsize 8 diff 0
-(03,04) size 63341146488 xsize 8 diff 0
-(03,05) size 66835578587 xsize 8 diff 0
-(03,06) size 70817218968 xsize 8 diff 0
-(03,07) size 75287241359 xsize 8 diff 0
-(03,08) size 80230806554 xsize 8 diff 0
-(03,09) size 85648500896 xsize 8 diff 0
-(03,10) size 91526942570 xsize 8 diff 0
-(03,11) size 97839307034 xsize 8 diff 0
-(03,12) size 104532220425 xsize 8 diff 0
-(03,13) size 111512278630 xsize 8 diff 0
-(03,14) size 118534637438 xsize 8 diff 0
-(03,15) size 125343428114 xsize 8 diff 0
-(03,16) size 132606308733 xsize 8 diff 0
-(03,17) size 136916149852 xsize 8 diff 0
-(03,18) size 141914020432 xsize 8 diff 0
-(04,00) size 94749641144 xsize 8 diff 0
-(04,01) size 133279673599 xsize 8 diff 0
+(00,01) size 2
+(00,02) size 5
+(00,03) size 14
+(00,04) size 41
+(00,05) size 122
+(00,06) size 365
+(00,07) size 1094
+(00,08) size 3281
+(00,09) size 9842
+(00,10) size 29525
+(00,11) size 88574
+(00,12) size 265721
+(00,13) size 797162
+(00,14) size 2391485
+(00,15) size 7174454
+(00,16) size 21523361
+(00,17) size 64570082
+(00,18) size 193710245
+(01,00) size 581130734
+(01,01) size 968551224
+(01,02) size 1248354915
+(01,03) size 1549681979
+(01,04) size 1872532447
+(01,05) size 2247198571
+(01,06) size 2687763949
+(01,07) size 3209021823
+(01,08) size 3829725502
+(01,09) size 4570570769
+(01,10) size 5455611910
+(01,11) size 6513369915
+(01,12) size 7778250701
+(01,13) size 9293295015
+(01,14) size 11117241273
+(01,15) size 13346673297
+(01,16) size 16191686752
+(01,17) size 20242633946
+(01,18) size 27420640118
+(02,00) size 21522651307
+(02,01) size 30986308034
+(02,02) size 31298623903
+(02,03) size 31693832491
+(02,04) size 32408870046
+(02,05) size 33278325617
+(02,06) size 34338606328
+(02,07) size 35581728837
+(02,08) size 37004817149
+(02,09) size 38608152181
+(02,10) size 40386888039
+(02,11) size 42334433531
+(02,12) size 44442197991
+(02,13) size 46701574497
+(02,14) size 49105278599
+(02,15) size 51605344588
+(02,16) size 54143854082
+(02,17) size 57213368302
+(02,18) size 61228340733
+(03,00) size 40881769487
+(03,01) size 58002999560
+(03,02) size 59334643238
+(03,03) size 60469963159
+(03,04) size 63341146488
+(03,05) size 66835578587
+(03,06) size 70817218968
+(03,07) size 75287241359
+(03,08) size 80230806554
+(03,09) size 85648500896
+(03,10) size 91526942570
+(03,11) size 97839307034
+(03,12) size 104532220425
+(03,13) size 111512278630
+(03,14) size 118534637438
+(03,15) size 125343428114
+(03,16) size 132606308733
+(03,17) size 136916149852
+(03,18) size 141914020432
+(04,00) size 94749641144
+(04,01) size 133279673599
