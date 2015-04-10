@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   int incpus,ncpus,cpuid,modidx,width,y,x,nextx,tsizelen;
   uint64_t msize,modulus,nin;
   char c,*tsizearg,inbase[64];
-  uint64_t laststate, nnewillcnt, newstates[3]; 
+  uint64_t skipunder, nnewillcnt, newstates[3]; 
   int i,nnew,noutfiles;
   statebuf *mb;
   statecnt sn;
@@ -68,16 +68,17 @@ int main(int argc, char *argv[])
     exit(1);
   }
   if (argc > 9) {
-    assert(sscanf(argv[9],"%d.%lo", &noutfiles, &laststate) == 2);
+    assert(sscanf(argv[9],"%d.%lo", &noutfiles, &skipunder) == 2);
     noutfiles++;
-    printf("skipping %d output files and states up to %lo\n", noutfiles, laststate);
+    printf("skipping %d output files and states up to %lo\n", noutfiles, skipunder);
+    skipunder++;
   } else {
     noutfiles = 0;
-    laststate = 0L;
+    skipunder = 0L;
   }
 
   sprintf(inbase,"%d.%d/yx.%02d.%02d",width,modidx,y,x); 
-  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus, laststate);
+  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus, skipunder);
   go = goinit(width, modidx, modulus, y+!nextx, nextx, ncpus, cpuid);
 
   nnewillcnt = nin = 0LL;
@@ -110,6 +111,8 @@ int main(int argc, char *argv[])
   printf(       "needy %lu ", needywritten(go));
   printf(       "legal %lu ",legalwritten(go));
   printf("at (%d,%d)\n",y+(nextx==0),nextx);
+
+  assert(cpuid != 0 || skipunder != 0L || nin > 0); // crash if cpu0 processes no states
 
   return 0;
 }

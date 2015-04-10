@@ -13,7 +13,7 @@
 struct goin {
   uint64_t modulus;
   uint64_t totalin;
-  uint64_t skipupto;
+  uint64_t skipunder;
   statebuf stream[MAXSTREAMS];
   statebuf *heap[MAXSTREAMS];
   int nstreams;
@@ -73,7 +73,7 @@ void fillbuf(goin *gin, statebuf *sb)
       return;
     }
     gin->totalin++;
-  } while (sb->state <= gin->skipupto);
+  } while (sb->state < gin->skipunder);
 }
 
 void hpreplace(goin *gin, int i)
@@ -130,7 +130,7 @@ void deletemin(goin *gin)
   hpreplace(gin, 0);
 }
 
-goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus, uint64_t skipupto) {
+goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modulus, uint64_t skipunder) {
   char inname[FILENAMELEN];
   statebuf *sb;
   FILE *fp;
@@ -148,7 +148,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
   gin->incpus = incpus;
   gin->cpuid = cpuid;
   gin->modulus = modulus;
-  gin->skipupto = skipupto;
+  gin->skipunder = skipunder;
   sb = &gin->stream[gin->nstreams = 0];
   int limto = incpus < ncpus ? ncpus : incpus;
   for (from=0; from<incpus; from++) {

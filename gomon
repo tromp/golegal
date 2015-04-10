@@ -1,6 +1,6 @@
 #!/bin/sh
 while true;
-  do top -u $USER -n 1| head -20;
+  do top -u $USER -n 1| head -12;
   a=`ls -td $1.$2/yx.$3*/fromto.* | head -1`
   echo $a
   ls -lt $a | head -2

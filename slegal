@@ -26,7 +26,9 @@ if ((x == 0 && y == 0)); then
   incpus=1
   pincpus=1
 fi
-nextyx=""
+if (( x < 10 )); then showx="0$nextx"; else showx=$nextx; fi
+if (( y < 10 )); then showy="0$nexty"; else showy=$nexty; fi
+nextyx="$wm/yx.$showy.$showx"
 while ((y < height)); do
   yx=$nextyx
   nextx=$x
@@ -47,8 +49,10 @@ while ((y < height)); do
   done
   wait
   date > "$nextyx/end"
+  echo chmod -R 555 $nextyx
+  chmod -R 555 $nextyx
 
-  if [[ $obsolete != "" ]]; then rm -rf $obsolete/fromto.*; fi
+  if [[ $obsolete != "" ]]; then echo "rm -rf $obsolete/fromto.*"; chmod -R 755 $obsolete; rm -rf $obsolete/fromto.*; chmod 555 $obsolete; fi
   if (( x != 0 )); then obsolete=$yx; else obsolete=""; fi
   x=$nextx
   y=$nexty
