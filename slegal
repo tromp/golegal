@@ -26,8 +26,8 @@ if ((x == 0 && y == 0)); then
   incpus=1
   pincpus=1
 fi
-if (( x < 10 )); then showx="0$nextx"; else showx=$nextx; fi
-if (( y < 10 )); then showy="0$nexty"; else showy=$nexty; fi
+if (( x < 10 )); then showx="0$x"; else showx=$x; fi
+if (( y < 10 )); then showy="0$y"; else showy=$y; fi
 nextyx="$wm/yx.$showy.$showx"
 while ((y < height)); do
   yx=$nextyx
