@@ -8,7 +8,7 @@
 #include "instream.h"
 #include "modadd.h"
 
-#define MAXSTREAMS 1024
+#define MAXSTREAMS 2048
 
 struct goin {
   uint64_t modulus;
