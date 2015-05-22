@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
   uint64_t modulus;
   char inbase[64];
   statebuf *mb;
-  goin gin;
+  goin *gin;
   int incpus, ncpus, cpuid;
 
   if (argc!=8) {
@@ -241,15 +241,17 @@ int main(int argc, char *argv[])
   }
 
   sprintf(inbase,"%d.%d/yx.%02d.%02d",wd,modidx,y,x);
-  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus))
+  gin = openstreams(inbase, incpus, ncpus, cpuid, modulus, 0);
+
   if (!nstreams(gin))
     fprintf (stderr, "wanring: no input files\n");
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
-    if (fwrite(&mb->state, sizeof(uint64_t),2,stdout) < 2) {
+    // if (fwrite(&mb->state, sizeof(uint64_t),2,stdout) < 2) {
+    if (printf("%lo %llu\n",mb->state,mb->cnt) < 0) {
       printf("failed to write state+count\n");
       exit(1);
     }
-    deletemin(gin)
+    deletemin(gin);
   }
   totin = totalread(gin);
   fprintf(stderr, "(%d,%d) size %llu",y,x,nin);
