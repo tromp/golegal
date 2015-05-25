@@ -247,7 +247,8 @@ int main(int argc, char *argv[])
     fprintf (stderr, "wanring: no input files\n");
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
     // if (fwrite(&mb->state, sizeof(uint64_t),2,stdout) < 2) {
-    if (printf("%lo %llu\n",mb->state,mb->cnt) < 0) {
+    // if (printf("%lo %llu\n",mb->state,mb->cnt) < 0) {
+    if (printf("%lo\n",mb->state) < 0) {
       printf("failed to write state+count\n");
       exit(1);
     }
