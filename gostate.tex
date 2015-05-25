@@ -1,0 +1,2157 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{epsf}
+
+\begin{document}
+
+\newtheorem{theorem}{\sc Theorem}
+\newtheorem{lemma}{\sc Lemma}
+\newtheorem{coro}{\sc Corollary}
+\newtheorem{conj}{\sc Conjecture}
+\newtheorem{defin}{\sc Definition}
+\newenvironment{proof}{\par \sc Proof.\rm}{\hspace*{\fill}$\bullet$\vspace{1ex}}
+\newcommand{\BFL}{\mathbf{L}}
+\newcommand{\BFl}{\mathbf{l}}
+\newcommand{\BFp}{\mathbf{p}}
+\newcommand{\BFT}{\mathbf{T}}
+
+%\title{On the State and Game Tree Complexity of Go}
+\title{Combinatorics of Go}
+
+\author{John Tromp \and Gunnar Farneb\"{a}ck}
+
+\maketitle
+
+\begin{abstract}
+We present several results concerning
+the number of positions and games of Go.
+We derive recurrences for $L(m,n)$,
+the number of legal positions on an $m \times n$ board,
+and develop a dynamic programming algorithm which computes
+$L(m,n)$ in time $O(m^3 n^2 \lambda^m)$ and space $O(m \lambda^m)$,
+for some constant $\lambda < 5.4$.
+An implementation of this algorithm lets us list $L(n,n)$ for $n\leq 17$.
+For bigger boards, we prove existence of a
+{\em base of liberties} $\lim_{m,n \rightarrow \infty} \sqrt[mn]{L(m,n)}$ of
+$2.9757341920433572493\ldots$.
+Based on a conjecture about vanishing error-terms,
+we derive an asymptotic formula for $L(m,n)$,
+which is shown to be highly accurate.
+
+We also study the Game Tree complexity of Go,
+proving an upper bound on the number of possible games
+of $(mn)^{L(m,n)}$ and a lower bound
+of $2^{2^{n^2/2\,-O(n)}}$ on $n\times n$ and $2^{2^{n-1}}$
+on $1 \times n$ boards, in addition to
+exact counts for $mn \leq 4$ and estimates up to $mn=9$.
+We end with investigating whether one game can encompass all legal positions.
+%, and a study of the maximum number of strings.
+\end{abstract}
+
+\section{Introduction}
+Originating over 3000 years ago in China,
+Go~\cite{gowiki} is perhaps the oldest boardgame in the world,
+enjoyed by millions of players worldwide.
+Its deceptively simple rules~\cite{gorules}
+give rise to amazing strategic depth.
+Results about the computational complexity of Go
+date back some 25 years. In 1980, Lichtenstein and Sipser~\cite{LS80}
+proved Go PSPACE-hard, while 3 years later, Robson~\cite{R83}
+showed Go with the basic ko rule to be EXPTIME-complete. More recently,
+certain subproblems of the game have been shown PSPACE-complete,
+like endgames~\cite{W02} and ladders~\cite{CT00}.
+This paper focuses instead on the {\em state complexity} of Go.
+We are motivated by the fact that
+the number of legal positions is a fundamental property of a game,
+the notion of legal position being unambigiously defined for Go
+despite many variances in rulesets, and that its computation turns
+out to be almost, but not quite, impossible. In particular, we
+demonstrate how computing the number of legal 19x19 positions,
+a number of 171 digits, will be feasible within a decade.
+
+\section{Previous work}
+Results about the state complexity of Go have been mostly confined
+to the online newsgroup {\tt rec.games.go} and the {\tt computer-go}
+mailing list.
+In September 1992, a {\tt rec.games.go} thread ``complexity of go''
+raised the question of how many positions are legal.
+It was noted that a trivial upper bound is $3^{mn}$,
+since every point on the board may be empty, black,
+or white. A position is legal if and only if every string of
+connected stones of the same color has an empty point adjacent to it.
+Achim Flammenkamp was the first to post simulation results, showing
+that $L(19,19) \sim 0.012 \times 3^{361} \sim 2.089 \times 10^{170}$.
+In August 1994, a thread ``Complexity of Chess and Go'' revisited the problem.
+Jack Hahn, Jonathan Cano, and John Tromp all posted programs to compute the
+number of legal positions by brute force enumeration.
+The largest count published at the time was $L(4,5)=1840058693$.
+A week's worth of computation would have found $L(5,5)$ as well,
+but enumerating $L(6,6)$ takes over 10000 times longer, severely
+limiting this approach.
+
+In a January 2000 thread
+``Number of Legal Positions on Almost Rectangular Boards'',
+inspired by earlier remarks by John Tromp and Hans Zschintzsch,
+Les Fables first explained in detail how to count using dynamic programming.
+His remark ``{\it Calculation for 9x9 should be possible on any PC,
+and a supercomputer should easily be able to handle 13x13.}''
+proves to be spot on.
+Much later, on January 23, 2005, Eric Boesch independently discovered
+this method on the {\tt computer-go} mailing list. His method is
+implemented the next day by Tapani Raiko, but a bug leads him to post a wrong
+count for $L(5,5)$. Later that day Jeffrey Rainy,
+based on his own implementation, gives the correct values for
+$L(5,5)$ and $L(6,6)$ but wrong values for $L(7,7)$ and $L(8,8)$.
+Finally, the next day, Gunnar Farneb\"{a}ck posts the first bugfree program,
+providing counts up to $L(10,10)$.
+
+In June 1999, a thread ``Math and Go''
+discussed the number of games
+of Go. Robert Jasiek claimed an upper bound of $n^{3^n}$, which still
+needs to be corrected for intermediate passes. John Tromp showed
+how to get a double exponential lower bound, which we make more formal
+while fixing a slight flaw, in this paper.
+In the same month, John Tromp started a thread ``number of 2*2 games'',
+noting that the number is 386356909593, as was recently independently
+verified.
+
+%In November 2006, a thread "Maximum number of strings" on the
+%{\tt computer-go} mailing list reported on research by
+%Youhei Yano and Ryuhei Miyashiro who used Linear Programming
+%to compute the maximum possible number of strings, which was found to
+%be 277 for $19 \times 19$.
+
+\section{Preliminaries}
+A position on an $m\times n$ Go board is a
+mapping from the set of {\em points}
+$\{0,\ldots,m-1\}\times \{0,\ldots,n-1\}$ to the set of colors
+$\{\mbox{empty}, \mbox{black}, \mbox{white}\}$.
+Points are {\em adjacent} in the usual grid sense---equal
+in one coordinate and differing by one in the other.
+A point colored black or white is called a {\em stone}.
+Adjacent stones of the same color form connected components
+called {\em strings}. An empty point adjacent to a string is called a
+{\em liberty} of that string.
+A game of Go starts with an empty board. The players, black and white,
+alternate turns, starting with black.
+On his turn, a player can either {\em pass}, or make a move which doesn't
+repeat an earlier position.
+This is the so-called Positional SuperKo (PSK) rule. Some rulesets,
+notably the American Go Association's AGA rules, use the Situational
+SuperKo (SSK) rule, which only forbids repeating a position with
+the same player to move.
+A move consists of coloring an empty point your color, followed by
+emptying all opponent strings without liberties (capture), followed by
+emptying all your own strings which then have no liberties (suicide).
+Finally, two consecutive passes end the game.
+Thus, in positions arising in a Go game,
+strings always have liberties. Such positions are called {\em legal}.
+The number of legal $m \times n$ positions is denoted $L(m,n)$.
+
+\begin{figure}
+\begin{center}
+\epsfxsize=9cm \epsfbox{ALL2.eps}
+\end{center}
+\caption{All $3^4$ $2 \times 2$ positions, with illegal ones crossed.}
+\label{ALL2}
+\end{figure}
+
+Figure~\ref{ALL2} shows all positions on a $2 \times 2$ board.
+Obviously, the 16 bottom-right positions with 4 stones are illegal.
+Additionally, the other $8$ crossed positions,
+with a stone of one color neighboured by two stones of
+the opposite color, are illegal. Since all positions with 2 or fewer stones
+are legal, we find that $L(2,2) = 3^4-16-8=57$.
+
+\begin{defin}[game graph]
+Let $G(m,n)$ be the directed graph whose vertices are the legal $m\times n$
+positions, and which has a directed edge $p \rightarrow q$ whenever
+a white or black move from position $p$ results in position $q \neq p$.
+\end{defin}
+
+Note that we exclude self-loops, corresponding to single-stone suicides,
+which are prohibited by the PSK rule.
+This will prove useful in Lemma~\ref{movesedges} below.
+
+\begin{figure}
+\begin{center}
+\epsfxsize=4cm \epsfbox{G21.eps}
+\end{center}
+\caption{game graph $G(1,2)$.}
+\label{G21}
+\end{figure}
+
+\begin{figure}
+\epsfxsize=12cm \epsfbox{G31.eps}
+\caption{game graph $G(1,3)$.}
+\label{G31}
+\end{figure}
+
+\begin{figure}
+\epsfxsize=12cm \epsfbox{G22.eps}
+\caption{game graph $G(2,2)$ with nodes/edges grouped
+into rotation/mirror symmetry classes.}
+\label{G2}
+\end{figure}
+
+Figure~\ref{G21} shows $G(1,2)$, consisting of 5 nodes and 12 edges,
+Figure~\ref{G31} shows $G(1,3)$, consisting of 15 nodes and 42 edges,
+while Figure~\ref{G2} shows $G(2,2)$ factored into rotation/mirror
+symmetry classes. Piet Hut observed that
+these latter two graphs are the only ones with no 2-loops.
+We next establish some basic properties of Go game graphs.
+
+\begin{lemma}
+Outgoing edges from a position are in 1-1 correspondence with moves
+that are not single-stone suicides.
+\label{movesedges}
+\end{lemma}
+
+\begin{proof}
+Given a position $p$, each move uniquely determines
+a resulting position $q$ and hence an edge $p \rightarrow q$.
+It remains to show the converse;
+that a resulting position $q \neq p$ uniquely determines a move.
+If $q$ has one more stone of color $c$, say at position $(x,y)$,
+and the same or fewer stones of opposite color, then that was the move.
+If $q$ has fewer stones of color $c$ and the same number of stones
+of opposite color, then the missing stones must form a string with
+1 liberty, and the move was a suicide.
+It can be seen that these cases are exhaustive, the former covering
+all non-suicide moves, and the latter covering all multiple-stone suicides.
+\end{proof}
+
+\begin{coro}
+\label{outdeg}
+A node with $k$ empty points has outdegree at most $2k$.
+\end{coro}
+
+\begin{coro}
+Each edge has an implied black or white color.
+\end{coro}
+
+Recall that a {\em simple} path is one that has no
+repeated vertices.
+
+\begin{lemma}
+\label{gamepaths}
+Go games are in 1-1 correspondence with simple paths
+starting at the empty position in the game graph.
+\end{lemma}
+
+\begin{proof}
+The previous Lemma shows that any path corresponds to a sequence
+of moves, not necessarily alternating in color.
+Inserting a single pass before every out-of-turn move,
+and 2 passes at the end, produces a properly alternating and ending game.
+The starting node ensures that the game starts from an empty board,
+while simplicity of the path ensures that each move is legal.
+Furthermore, since any game can be stripped of its
+passes to produce the corresponding path, this is a bijection.
+\end{proof}
+
+The above Lemma applies only to rules with Positional SuperKo.
+With Situational SuperKo, the corresponding paths are not necessarily
+simple, and a position can be visited twice (once by each player).
+%if the first visit is not followed by a pass.
+
+\begin{lemma}
+The game graph is strongly connected.
+\end{lemma}
+
+\begin{proof}
+Obviously we can reach any position from the empty board, so it
+suffices to show that we can reach the empty position from any position.
+We eliminate strings one by one, without ever creating new strings.
+To eliminate a string, its owner repeatedly plays on its liberties
+while his opponent passes.
+Some opponent strings may get captured in the process, but ultimately,
+the string itself will commit suicide.
+\end{proof}
+
+Note that this result depends on the possibility of suicide,
+and fails to hold for alternative rulesets, such as the Japanese
+rules of Go, which forbid suicide. Under such rules, a slightly weaker
+property can be shown.
+
+\begin{lemma}
+On all boards except $1 \times 1$, $1 \times 2$ and $2 \times 1$,
+the game subgraph obtained by removing the empty position and all
+suicide edges is strongly connected.
+\end{lemma}
+
+\begin{proof}
+First note that $G(1,1)$ has no suicide-edges to remove,
+while $G(1,2)$ breaks into 2 components when removing the empty position.
+Obviously, we can reach any position from a suitable single-stone position,
+so it suffices to show that we can reach every single-stone position
+from any position.
+First, one player, say black, repeatedly plays on a liberty of its strings.
+When all such plays result in suicides, the other player, white, can proceed
+to capture all black strings.
+Next, white can play until she has $mn-1$ stones, which black then captures.
+Given that $mn \geq 3$, we can repeat this last phase to lead to a
+capture by the desired color on the desired point.
+\end{proof}
+
+\section{Counting legal positions}
+
+The simplest way to count $L(m,n)$, the number of legal $m \times n$
+positions, is by brute force, just trying
+all $3^{mn}$ positions and testing each one for legality.
+However, a $5 \times 5$ board already has over 400 billion possible
+positions, and $9 \times 9$ has over $10^{38}$.
+Instead, we establish a correspondence between legal positions and
+paths in the so called {\em border state graph}, whose size is much
+more manageable. The problem thus reduces to that of counting paths
+of a certain length in a graph, which can be done efficiently
+by the method of Dynamic Programming.
+First we introduce the notion of partial boards, from which the
+border states naturally arise.
+
+\subsection{Partial Boards}
+
+Recall from the preliminaries that we number the points
+$(x,y) \in \{0,\ldots,n-1\}\times \{0,\ldots,m-1\}$.
+We picture a go board with the point $(0,0)$ in the top-left,
+$x$-coordinates increasing to the right, and $y$-coordinates
+increasing downward.
+For $0 \leq x < n$ and $0 \leq y < m$,
+let a partial go board up to column $x$ and row $y$ consist
+of all the points to the left of and above $(x,y)$.
+It has $x$ full columns and, if $y > 0$, one partial column of $y$ points.
+Figure~\ref{border} shows two example partial $7\times n$ positions
+up to $(3,3)$.
+
+\begin{figure}
+\epsfxsize=10cm \epsfbox{partial.eps}
+\caption{Two partial positions up to $(3,3)$ and their common border state.}
+\label{border}
+\end{figure}
+
+What these positions have in common is that
+the set of possible completions into legal full-board positions
+is identical. In either case, the remainder of the position has
+to provide a liberty to the top white group, to the
+black group it surrounds, and to the middle black group.
+We say that the positions share the same {\em border state}.
+
+\subsection{Border States}
+
+\begin{defin}[border state]
+A {\em border state}, or {\em state} for short, comprises the following
+data:
+\begin{itemize}
+\item the board height $m$,
+\item the size $0 \leq y <m $ of the partial column,
+\item the color of border points
+      $(x,0),\ldots,(x,y-1),(x-1,y),\ldots,(x-1,m-1)$
+      ($x$ is only a symbol whose value is immaterial to the state),
+\item for each stone on the border, whether it has liberties,
+\item connections among libertyless stones.
+\end{itemize}
+
+% empty points on the border imply liberties for adjacent stones.
+%\item adjacent same-colored stones are connected.
+%\item connections form an equivalence relation.
+
+A state with height $m$ and partial column size $y$ is called an
+$\binom{m}{y}$-state,
+or simply $y$-state if $m$ is clear from context.
+A partial position is pseudolegal if
+all libertyless stones are on, or connected to, the border.
+A state is called {\em constructible} if it is the border state of some
+pseudolegal partial position of arbitrary width.
+\end{defin}
+
+Information of liberties and connections is assumed to
+be consistent within the border.
+
+A partial position up to $(0,y)$ has a border state where
+points $(x-1,y),\ldots,(x-1,m-1)$ are off the board.
+We accomodate these zero-width positions
+by allowing the non-color `edge' for all $(x-1,\cdot)$ points,
+and call the result an {\em edge state} instead.
+
+In figures, libertyless stones and their connections are indicated with
+lines emanating to the left.
+
+The set of constructible states is difficult to characterize,
+and hence to count. We therefore introduce a slightly larger class.
+
+\begin{defin}
+Call a $y$-state $s$ {\em valid} if it satisfies all the following:
+\begin{itemize}
+\item connections don't cross, i.e. if 4 stones are ordered vertically as
+      $a,b,c,d$, with $a$ and $c$ connected, and $b$ and $d$ connected,
+      then they must all be connected.
+\item if a stone at $(x,y-1)$ either
+\begin{itemize}
+\item has connections, but (if $y>1$) not to $(x,y-2)$, or
+\item has liberties, but (if $y>1$) $(x,y-2)$ is opposite-colored,
+\end{itemize}
+      then points $(x,y-1)$ and $(x-1,y)$ are considered adjacent.
+\end{itemize}
+\end{defin}
+
+\begin{lemma}
+\label{constructibleisvalid}
+Every constructible state is valid.
+\end{lemma}
+
+\begin{proof}
+The non-crossing property can be seen to follow from the planarity
+of two-dimensional boards.
+If border point $(x,y-1)$ has a connection
+necessarily going through non-border point $(x-1,y-1)$,
+then the latter's neighbour $(x-1,y)$ is effectively
+also the former's neighbour. This virtual adjacency
+implies that $(x-1,y)$ must be either opposite colored,
+or same colored and connected to $(x,y-1)$.
+Similarly, if $(x,y-1)$ has a liberty necessarily obtained through
+$(x-1,y-1)$, then $(x,y-1)$ is effectively adjacent to $(x-1,y)$,
+preventing the latter from being a same colored-stone without liberties.
+\end{proof}
+
+\begin{figure}
+\begin{center}
+{\epsfxsize=2cm \epsfbox{unrealizable.eps}} \hspace{4cm}
+{\epsfxsize=2cm \epsfbox{shape.eps}}
+\end{center}
+\caption{(a) a valid but unconstructible state (b) non-rectangular boardshape}
+\label{validshape}
+\end{figure}
+
+The smallest example of a valid but not constructible state occurs at $m=3$
+as shown in Figure~\ref{validshape}(a).
+%is the single non-constructible valid $\binom{3}{2}$-class.
+Any partial board that connects the two white stones
+and provides a liberty to the black stone,
+will inevitably provide a liberty to the white stones as well.
+In other words,
+the fixed board height of $3$ doesn't allow the white string to distance
+itself from the black one.
+If we allowed variable height board shapes
+such as the one shown in Figure~\ref{validshape}(b),
+then the above valid state would become constructible.
+It can be shown that
+non-constructability of valid states is due entirely to the `lack
+of room' to simultaneously provide liberties and connections.
+
+We can somewhat efficiently compute the number of valid $0$-border states,
+each of which corresponds to a balanced path of length $m$
+through the finite automaton shown later in Figure~\ref{borderdfa}.
+In a {\em balanced} path the
+up and down connections of libertyless black and white stones
+match up properly like balanced parentheses of two types, e.g. `([]([]))'.
+Using Dynamic Programming,
+we can compute the number of such paths
+ending in a given vertex of the automaton with a given
+stack of pending connections. With at most $m/2$ pending
+connections, there are at most $2^{m/2}$ such stacks.
+Having all counts for paths of length $l$, we can in time
+$O(2^{m/2})$ compute all counts for paths of length $l+1$,
+thus taking time $O(m2^{m/2})$ overall.
+It took only 0.005 sec to determine the number of $\binom{19}{0}$ border states
+in this manner.
+Computing numbers of $y$-states for $y>0$,
+numbers of edge states, and of state classes is only slightly more complicated
+and can be done within the same time complexity.
+
+Table~\ref{borderstates} shows for each $m$ the minimum and maximum
+number of valid $\binom{m}{y}$-border state classes,
+which turn out to be achieved at $y=0$ and $y=m-1$, respectively.
+The maximum is always about 45\% larger than the minimum.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|r|l|l|}
+\hline
+$m$ & \#valid $\binom{m}{0}$-classes & \#valid $\binom{m}{m-1}$-classes \\ \hline
+1   & 3 & 3 \\
+2   & 9 & 13 \\
+3   & 32 & 46 \\
+4   & 117 & 168 \\
+5   & 444 & 642 \\
+6   & 1712 & 2482 \\
+7   & 6742 & 9808 \\
+8   & 26973 & 39324 \\
+9   & 109736 & 160286 \\
+10  & 452863 & 662265 \\
+11  & 1894494 & 2772774 \\
+12  & 8020098 & 11742926 \\
+13  & 34320647 & 50258461 \\
+14  & 148266922 & 217096273 \\
+15  & 645949499 & 945567689 \\
+16  & 2835158927 & 4148642993 \\
+17  & 12526125303 & 18320946269 \\
+18  & 55665579032 & 81376671503 \\
+19  & 248661924718 & 363324268018 \\
+%29  & 954288877719528758 & 1387841561460467776 \\
+%39  & 4473796211426669492286473 & 6487684033510851922982593 \\
+%49  & 23280658008873608262573408056028 & 33699888311500814844062557229102 \\
+%59  & 129235153940653928001315951386080547675 & 186846769643959178001661457280461585567 \\
+%63  & 65289749895041712025414950342628423873304 & \\
+%64  & 309840492766138133207052185879039243670673 & 447753120258832442706873006322187901422572 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Number of valid border state classes.}
+\label{borderstates}
+\end{table}
+
+Only a tiny percentage of the listed valid states fails to be constructible
+(e.g. only 337 of the 109736 valid $\binom{9}{0}$-classes).
+
+\subsection{The border state graph}
+
+\begin{figure}
+\epsfxsize=12cm \epsfbox{expandborder.eps}
+\caption{A border state and its 3 successors.}
+\label{successors}
+\end{figure}
+
+Let's see how
+the border state of a partial board up to $(x,y)$ and the color of $(x,y)$
+uniquely determine the border state up to $(x,y+1)$,
+as exemplified in Figure~\ref{successors}.
+If $(x,y)$ is empty, then any libertyless stones at $(x,y-1)$ and $(x-1,y)$
+as well as all stones connected to them, become stones with liberties.
+Otherwise, suppose $(x,y)$ is black.
+
+If $(x-1,y)$ is a libertyless white stone without connections, then
+the new partial board is no longer pseudolegal; a case we must avoid.
+
+If either $(x,y-1)$ or $(x-1,y)$ is empty or
+black with liberties then $(x,y)$ has liberties,
+which it may provide to the other neighbour
+(if that is black without liberties).
+
+Finally, if neither $(x,y-1)$ nor $(x-1,y)$ provides liberties,
+then $(x,y)$ is without liberties and connects any black neighbours.
+
+The case for $(x,y)$ being white is identical with all colors reversed.
+
+Similarly, the edge state of a partial board up to $(0,y)$
+and the color of $(0,y)$ uniquely determine
+the edge state up to $(0,y+1)$ (in case $y<m-1$)
+or border state up to $(1,0)$ (in case $y=m-1$).
+
+\begin{defin}[(augmented) border state graph]
+Let $B(m)$ be the directed graph whose vertices are the constructible
+border states of height $m$,
+and which has edges from each $y$-state to its 2 or 3 successor
+$((y+1)\bmod m)$ states.
+The augmented border state graph $AB(m)$ has additional vertices and
+outgoing edges for all edge states.
+\end{defin}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=5cm \epsfbox{B1.eps}
+\end{center}
+\caption{Augmented border state graph $AB(1)$.}
+\label{onebordergraph}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=12cm \epsfbox{B2.eps}
+\end{center}
+\caption{Edges between state classes of $B(2)$.}
+\label{twobordergraph}
+\end{figure}
+
+Figure~\ref{successors} shows the 3 successors of a border state,
+while Figure~\ref{onebordergraph} shows
+the augmented border state graph $AB(1)$.
+Border state graph $B(2)$ is too large to show in full detail,
+so instead of border states we show border state {\em classes}.
+
+%Each edge from a class with stones
+%thus represents 2 edges in $B(2)$, one from each of the 2 states in the class
+%(necessarily leading to equivalent states).
+For further clarity, Figure~\ref{twobordergraph} 
+shows edges between the 9 $0$-state classes and 13 $1$-state classes
+separately for each direction,
+with the state classes ordered to minimize edge crossings.
+Thick edges represent the case where adding a black stone
+and adding a white stone lead to equivalent states in $B(2)$.
+
+\begin{lemma}
+\label{connected-border-graph}
+  The border state graph is strongly connected.
+\end{lemma}
+
+\begin{proof}
+Every $y$-state reaches the stoneless $y$-state after $m$ empty
+successors, and thus reaches the stoneless $0$-state after another
+$m-y$ empty successors.
+From the latter, we can reach any possible column~0 state $s$,
+and hence any constructible state, as follows. Note that $s$ can be reached
+in $m$ steps from a $0$-state $s'$ that replaces each stone in $s$ by
+a stone with liberties of the opposite color, effectively forming
+a virtual edge. Any such state $s'$ can clearly by reached from
+the stoneless $0$-state in $m$ steps.
+\end{proof}
+
+\begin{lemma}
+\label{positionpaths}
+There is a 1-1 correspondence between pseudolegal partial positions up
+to $(n,y)$ and paths of length $mn+y$ through the augmented border state
+graph that start at the all-edge state.
+\end{lemma}
+
+\begin{proof}
+By induction on $mn+y$. The unique partial position up to $(0,0)$
+corresponds to the length $0$ path starting at the all-edge state.
+Furthermore, for a path ending at state $s$ corresponding to a
+pseudolegal partial position $p$ up to $(n,y)$, the successors of $s$
+correspond exactly to the pseudolegal partial positions $p'$ up to
+$(n,y+1)$ (or $(n+1,0)$ for $y=m-1$) that extend $p$ by one point.
+\end{proof}
+
+\subsection{Recurrences}
+
+\begin{defin}[state counts]
+For an $\binom{m}{y}$-state $s$,
+denote by $L(m,n,y,s)$ the number of pseudolegal
+partial positions up to $(n,y)$ that have border/edge state $s$
+(or equivalently, the number of paths of length $mn+y$ in the augmented
+border state graph from the all-edge state to $s$).
+Call a $y$-state $s$ {\em legal} if $y=0$ and $s$ has no libertyless stones.
+\end{defin}
+
+Obviously, we have
+
+\begin{lemma}[color symmetry]
+\label{color-symmetry}
+Let state $s'$ be derived from state $s$ by reversing the colors
+of all stones. Then $L(m,n,y,s) = L(m,n,y,s')$.
+\end{lemma}
+
+\begin{defin}[state classes]
+We define a {\em state class}, denoted $[s]$, as the equivalence class
+of state $s$ under color reversal.
+Call a state class {\em legal} when its members are,
+and define $L(m,n,y,[s]) = \sum_{s' \in [s]} L(m,n,y,s')$.
+\end{defin}
+
+Note that all equivalence classes, except for stoneless states,
+consist of exactly 2 states.
+These definitions immediately imply
+
+\begin{lemma}
+$L(m,n) = \sum_{\mbox{legal }s} L(m,n,0,s)
+        = \sum_{\mbox{legal }[s]} L(m,n,0,[s])$.
+\label{legal-states}
+\end{lemma}
+
+Another form of symmetry occurs in $0$-states only:
+
+\begin{lemma}[up-down symmetry]
+\label{up-down-symmetry}
+Let state $s'$ be derived from $0$-state $s$ by
+reversing the order of points from top to bottom.
+Then $L(m,n,y,s) = L(m,n,y,s')$ and $L(m,n,y,[s]) = L(m,n,y,[s'])$.
+\end{lemma}
+
+\begin{defin}[state count vector]
+Denote by $\BFL(m,n,y)$ the state-indexed vector with elements
+$L(m,n,y,s)$ for all constructible $y$-states $s$ (edge states for $n=0$,
+border states for $n>0$) and by $\BFl_m$ the
+characteristic vector of legal states of height $m$.
+\end{defin}
+
+Now Lemma~\ref{legal-states} can be expressed as
+\[L(m,n) = \BFl_m^T \BFL(m,n,0).\]
+The following crucial observation forms the basis for the recurrences
+we derive.
+Since $L(m,n,y+1,s)$ equals the sum of
+$L(m,n,y,s')$ over all predecessor states $s'$ of $s$ in the augmented border
+state graph, it follows that
+the border state vectors $\BFL(m,n,y), n>0$ are related by linear
+transformations $\BFT_{m,y}$, such that
+$\BFL(m,n,y+1) = \BFT_{m,y} \BFL(m,n,y)$
+(and $\BFL(m,n+1,0) = \BFT_{m,m-1} \BFL(m,n,m-1)$).
+Indeed, the $\BFT_{m,y}$
+appear as submatrices of the transposed adjacency matrix of
+the border state graph.
+As a consequence, successive $0$-state vectors are related as
+
+\[ \BFL(m,n+1,0) = \BFT_{m,m-1} \BFT_{m,m-2} \dots
+  \BFT_{m,1} \BFT_{m,0} \BFL(m,n,0). \]
+
+Thus we are led to define
+
+\begin{defin}[Recurrence matrix]
+Let $\BFT_m = \BFT_{m,m-1} \dots \BFT_{m,0}$.
+%$\BFv_m(n)=\BFL(m,n,0)$, and $\BFv_m(0)=\BFT_m^{-1} \BFv_m(1)$.
+\end{defin}
+
+This leads to a matrix power expression for $L(m,n)$:
+\[ L(m,n) = \BFl_m^T \BFT_m^{n-1} \BFL(m,1,0). \]
+
+Furthermore, $L(m,n)$ can be shown to satisfy a recurrence not
+involving the border state counts. To simplify the following
+derivations, $m$ is understood to be fixed and is dropped from the
+notation, so that $L(m,n) = \BFl^T \BFT^{n-1} \BFL(1,0)$.
+
+\begin{theorem}
+\label{recurrence}
+  For fixed $m$, $L(m,n)$ satisfies a linear recurrence
+  whose order is at most the number of valid $0$-states.
+\end{theorem} 
+
+\begin{proof}
+  Let $p(\lambda)$ be the characteristic polynomial of the $r \times r$
+  matrix $\BFT$,
+  \[
+    p(\lambda) = \det (\lambda \mathbf{I} - \BFT) =
+    \lambda^r + a_{r-1} \lambda^{r-1} + \dots + a_1 \lambda + a_0.
+  \]
+  By the Cayley-Hamilton theorem, $p(\BFT) = \mathbf{0}$. It
+  follows that
+  \[
+    \BFT^r = -(a_{r-1}\BFT^{r-1} + \dots + a_1
+    \BFT + a_0 \mathbf{I})
+  \]
+  and by multiplication by $\BFT^{k-1}$ that
+  \[
+    \BFT^{r+k-1} = -(a_{r-1}\BFT^{r+k-2} + \dots +
+    a_1 \BFT^{k} + a_0 \BFT^{k-1})
+  \]
+  for all $k \geq 1$. Multiplying by
+  $\BFl^T$ on the left and $\BFL(1)$ on the right yields
+  \[
+    \begin{split}
+      L(m,k+r) &= \BFl^T \BFT^{r+k-1} \BFL(1,0) \\
+      &= -(a_{r-1} L(m,k+r-1) + \dots + a_1 L(m,k+1) + a_0 L(m,k))
+    \end{split}
+  \]
+  for all $k \geq 1$, proving the theorem.
+\end{proof}
+
+By expressing $\BFT$ in terms of state classes rather than states,
+and modifying $\BFl^T$ and $\BFL(1,0)$ accordingly
+(as illustrated in section \ref{1xn-boards}),
+we obtain a stronger upperbound on the order, namely the number of valid
+$0$-state classes as given in Table~\ref{borderstates}.
+Finally, that bound may be nearly halved again by exploiting the up-down
+symmetry of $0$-states.
+
+The structure of solutions to linear recurrences
+is well known~\cite{concretemath}.
+Theorem~\ref{recurrence} implies
+
+\begin{coro}
+  \label{explicit-form}
+  For fixed $m$, $L(m,n)$ can be written in the form
+  \[
+    L(m,n) = \sum_k q_k(n) l_k^n,
+  \]
+  where $l_k$ are the distinct eigenvalues of $\BFT$, and $q_k$ are
+  polynomials of degree at most $\mbox{multiplicity}(l_k)-1$. 
+\end{coro}
+
+Notice that some of the terms may vanish but not the largest
+eigenvalue, which we have additional information about. First a
+technical lemma is needed.
+
+\begin{lemma}
+  \label{jordan-lemma}
+  If $l_k \ne 0$ is an eigenvalue of $\BFT$ of multiplicity 1 with
+  corresponding left and right eigenvectors $\mathbf{e}^T$ and
+  $\mathbf{f}$ then $q_k$ is the constant $\frac{\BFl^T \mathbf{f}
+    \mathbf{e}^T \BFL(1,0)}{l_k}$.
+\end{lemma}
+
+\begin{proof}
+  Let $\BFT = \mathbf{V} \mathbf{J} \mathbf{V}^{-1}$ be the Jordan
+  canonical decomposition of $\BFT$. Thus $L(m,n) = \BFl^T \BFT^{n-1}
+  \BFL(1,0) = \BFl^T \mathbf{V} \mathbf{J}^{n-1} \mathbf{V}^{-1}
+  \BFL(1,0)$. Since $l_k$ has multiplicity one, it must have a single
+  corresponding Jordan block of size 1. Due to the structure of $J$
+  only this block can provide $l_k^n$ terms to $L(m,n)$, more
+  precisely $\BFl^T e l_k^{n-1} f^T \BFL(1,0)$
+\end{proof}
+
+
+\begin{theorem}
+\label{mxn-asymptotics}
+  There exist $a_m>0$, $0<\lambda_m \leq 3^m$, and $0<\phi_m<1$ such that
+  \[ L(m,n)=a_m \lambda_m^n (1+r(m,n)) \]
+  with $r(m,n)=O(\phi_m^n)$.
+\end{theorem}
+
+\begin{proof}
+By lemma \ref{connected-border-graph} it
+follows that $\BFT$ is regular, i.e.\ $\BFT^k$ is (elementwise)
+positive for some $k$. Since, by construction, $\BFT$ is also
+non-negative, the Perron-Frobenius theorem guarantees the existence of a
+real positive eigenvalue $l_1$ with the properties that it has
+multiplicity one, is larger in magnitude than all other eigenvalues,
+and has left and right eigenvectors $\mathbf{e}^T$ and $\mathbf{f}$
+with all elements positive. From Lemma~\ref{jordan-lemma} it follows
+that $q_1(n) = \frac{\BFl^T \mathbf{f} \mathbf{e}^T \BFL(1,0)}{l_k}$,
+which is guaranteed to be a positive constant since $\BFl^T$ and
+$\BFL(1,0)$ are non-negative and not all zero whereas $\mathbf{e}$ and
+$\mathbf{f}$ are positive. Now $L(m,n) = q_1 l_1^n (1 + \sum_{k>1}
+\frac{q_k(n)}{q_1} \frac{l_k}{l_1}^n)$ and the claimed result follows
+(for any $\max_{k>1} \frac{|l_k|}{l_1}<\phi_m<1$). The upper bound on
+$\lambda_m$ follows necessarily from the trivial upper bound
+$L(m,n) \leq 3^{mn}$.
+\end{proof}
+
+The recursion coefficients are most easily obtained by
+computing $L(m,n)$ for $n=1,\dots,2s$
+by the dynamic programming algorithm in section
+\ref{DP-algorithm}. Since we know that the sequence must satisfy
+\emph{some} linear recurrence, the problem is reduced to determining the
+minimal order and the corresponding coefficients. Moreover, we know
+that the minimal order is upper-bounded by the number of valid state
+classes $s$ given in Table~\ref{borderstates}.
+
+\begin{lemma}
+\label{coefficient-lemma}
+  Assume that the sequence $x(1), x(2), \dots$ satisfies the linear
+  recurrence
+  \[
+    x(k+r) = c_{r-1} x(k+r-1) + \dots + c_1 x(k+1) + c_0 x(k).
+  \]
+  Then the coefficients $c_i$ satisfy the equation system
+  \[
+    \begin{pmatrix}
+      x(1) & x(2) & \dots & x(r) \\
+      x(2) & x(3) & \dots & x(r+1) \\
+      \vdots & \vdots & \ddots & \vdots \\
+      x(r) & x(r+1) & \dots & x(2r-1) \\
+    \end{pmatrix}
+    \begin{pmatrix}
+      c_0 \\ c_1 \\ \vdots \\ c_{r-1}
+    \end{pmatrix} = 
+    \begin{pmatrix}
+      x(r+1) \\ x(r+2) \\ \vdots \\ x(2r)
+    \end{pmatrix}.
+  \]
+  Furthermore, $r$ is the minimal order of recurrence iff
+  the above matrix is non-singular, in which case the coefficients
+  are uniquely determined.
+\end{lemma}
+
+As we do not know the minimal order of recurrence, we form
+matrices for increasing $r$. For each non-singular one, we
+compute the recurrence coefficients and verify the recurrence for
+all $s$ elements $L(m,s+1)$ through $L(m,2s)$.
+The smallest verifiable $r$ is the minimal order.
+For efficient computations, the Berlekamp-Massey algorithm
+\cite{B83} can be used together with modular arithmetic and the
+Chinese Remainder Theorem.
+
+\subsubsection{$1 \times n$ Boards}
+\label{1xn-boards}
+
+For one-dimensional boards, with $m=1$, Figure~\ref{onebordergraph} shows
+the five possible border
+states ``empty'', ``black with liberty'', ``white with liberty'',
+``black without liberty'', and ``white without liberty''. The first
+three are legal, so $\BFl = (1,1,1,0,0)^T$. The state count
+transformation is given by the transposed adjacency matrix
+\[
+  \BFT =
+  \begin{pmatrix}
+    1 & 1 & 1 & 1 & 1 \\
+    1 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 1 & 0 \\
+    0 & 1 & 0 & 0 & 1
+  \end{pmatrix}
+\]
+and the initial state count with one column gives $\BFL(1,0) = (1,0,0,1,1)^T$.
+In this case $\BFT$ is invertible and we can write
+$\BFL(0,0) = \BFT^{-1} \BFL(1,0) = (-1,1,1,0,0)^T$ and
+\[
+  L(1,n) = \BFl^T \BFT^{n-1} \BFL(1,0)= \BFl^T \BFT^n \BFL(0,0) =
+\]
+\[
+  \begin{pmatrix}
+    1 & 1 & 1 & 0 & 0 
+  \end{pmatrix}
+  \begin{pmatrix}
+    1 & 1 & 1 & 1 & 1 \\
+    1 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 1 & 0 \\
+    0 & 1 & 0 & 0 & 1
+  \end{pmatrix}^n
+  \begin{pmatrix}
+    -1 \\ 1 \\ 1 \\ 0 \\ 0 
+  \end{pmatrix},
+\]
+which gives the sequence $1,5,15,41,113,313,867,2401,6649,18413,\dots$
+
+The characteristic polynomial of $\BFT$ is
+$p(\lambda)=\det(\lambda \mathbf{I} - \BFT) =
+\lambda^5 - 5\lambda^4 + 8\lambda^3 - 6\lambda^2 + 3\lambda - 1$. It
+follows that $L(1,n)$ satisfies the recurrence
+\[
+  L(1,k+5) = 5 L(1,k+4) - 8 L(1,k+3) + 6 L(1,k+2) - 3 L(1,k+1) + L(1,k).
+\]
+This is not a minimal order recurrence, however. Using state classes
+instead (empty, stone with liberty, or stone without liberty) yields
+\begin{align*}
+  \BFl &=
+  \begin{pmatrix}
+    1 & 1 & 0
+  \end{pmatrix}^T, \\
+  \BFT &=
+  \begin{pmatrix}
+    1 & 1 & 1 \\
+    2 & 1 & 0 \\
+    0 & 1 & 1 \\
+  \end{pmatrix},\\
+  \BFL(1,0) &=
+  \begin{pmatrix}
+    1 & 0 & 2
+  \end{pmatrix}^T
+\end{align*}
+and a characteristic polynomial $p(\lambda) = \lambda^3 - 3 \lambda^2
++ \lambda - 1$, leading to the minimal recurrence
+\[
+  L(1,k+3) = 3 L(1,k+2) - L(1,k+1) + L(1,k).
+\]
+
+These coefficients can also be computed directly from $L(1,1), \dots,
+L(1,6)$ according to Lemma~\ref{coefficient-lemma} as
+\[
+  \begin{pmatrix}
+    1 & 5 & 15 \\
+    5 & 15 & 41 \\
+    15 & 41 & 113
+  \end{pmatrix}^{-1}
+  \begin{pmatrix}
+    41 \\ 113 \\ 313
+  \end{pmatrix} =
+  \begin{pmatrix}
+    1 \\ -1 \\ 3
+  \end{pmatrix}.
+\]
+
+$L(1,n)$ can be written in the form of Corollary~\ref{explicit-form} as
+\[
+  \begin{split}
+    L(1,n) &\sim 0.694 \cdot 2.769^n + (0.153 - 0.812 i) \cdot (0.115 + 0.590
+    i)^n + \\
+    &+ (0.153 + 0.812 i) \cdot (0.115 - 0.590 i)^n,    
+  \end{split}
+\]
+where the constants involved are solutions to cubic equations. In
+particular the largest eigenvalue can be written in closed form as
+\[
+  \lambda_1 = 1 + \frac{1}{3} \left( (27+3\sqrt{57})^{\frac{1}{3}} +
+    (27-3\sqrt{57})^{\frac{1}{3}} \right) \sim 2.769292354.
+\]
+
+\subsubsection{$2 \times n$ up to $9 \times n$ Boards}
+
+For $2 \times n$ boards, Table~\ref{borderstates} shows 9 state classes,
+but up-down symmetry leaves an upper bound on the minimal recurrence order
+of only 7, which turns out to be exact:
+\[
+  \begin{split}
+    L(2,n+7) &= 10 L(2,n+6) - 16 L(2,n+5) + 31 L(2,n+4) -13 L(2,n+3) +
+    \\
+    &+ 20 L(2,n+2) + 2 L(2,n+1) - L(2,n).
+  \end{split}
+\]
+This sequence starts $1,5,57,489,4125,35117,299681,\ldots$.
+
+For $3 \times n$ the number of constructible state classes is 31, which up-down
+symmetry reduces to 21, but the minimal recurrence order is only 19:
+\[
+  \begin{split}
+    L(3,n+19) &= 33 L(3,n+18) - 233 L(3,n+17) + 1171 L(3,n+16) - \\
+    &- 3750 L(3,n+15) + 9426 L(3,n+14) - 16646 L(3,n+13) + \\
+    &+ 22072 L(3,n+12) - 19993 L(3,n+11) + 9083 L(3,n+10) + \\
+    &+ 1766 L(3,n+9) - 4020 L(3,n+8) + 6018 L(3,n+7) - \\
+    &- 2490 L(3,n+6) - 5352 L(3,n+5) + 1014 L(3,n+4) - \\
+    &- 1402 L(3,n+3) + 100 L(3,n+2) + 73 L(3,n+1) - 5 L(3,n).
+  \end{split}
+\]
+%The first 19 terms are 1,15,489,12675,321689,8180343,208144601, 5296282323,
+%134764135265, 3429075477543, 87252874774409, 2220150677358587,
+%56491766630430761, 1437433832683612783, 36575525011037967769,
+%930664771769562054147, 23680778803620700205625, 602557764897193682879119,
+%15332091188757329557096929.
+
+The recurrences for $m \geq 4$ are too long to show here. Minimal
+orders and the $\lambda_m$ values from theorem \ref{mxn-asymptotics}
+are listed in Table~\ref{small-board-recurrences} for $1 \leq m \leq 9$.
+
+\begin{table}
+  \begin{center}
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      size & order & $a_m$ & $\lambda_m$ \\ \hline
+      $ 1 \times n$ & 3   & 0.69412340909080771809 & 2.76929235423863141524 \\ \hline
+      $ 2 \times n$ & 7   & 0.77605920648443217564 & 8.53365251207176310397 \\ \hline
+      $ 3 \times n$ & 19  & 0.76692462372625158688 & 25.44501470555814081494 \\ \hline
+      $ 4 \times n$ & 57  & 0.73972591465609392167 & 75.70934113501819973789 \\ \hline
+      $ 5 \times n$ & 217 & 0.71384057986002504205 & 225.28834590398701930674 \\ \hline
+      $ 6 \times n$ & 791 & 0.68921150040083474629& 670.39821492744590475404 \\ \hline
+      $ 7 \times n$ & 3107 & 0.66545979340188479816 & 1994.92693537832618289977 \\ \hline
+      $ 8 \times n$ & 12110 & 0.64252516474515096185 & 5936.37229306818075324832 \\ \hline
+      $ 9 \times n$ & 49361 & 0.62038058380200867949 & 17665.06600837227629766227 \\ \hline
+    \end{tabular}
+  \end{center}
+  \caption{Small board recurrences.}
+  \label{small-board-recurrences}
+\end{table}
+
+\subsubsection{Legal Probabilities and Markov Chains}
+
+Dividing the number of legal positions $L(m,n)$ by the total number of
+positions $3^{mn}$ gives the probability that a random position on an
+$m \times n$ board is legal. With this interpretation, it is natural to
+consider the distribution of border states as a Markov Chain. First,
+however, it is necessary to extend the border state space with
+``illegal'' states (one for each partial column size)
+which represent partial boards that aren't pseudolegal,
+and make all states have outdegree $3$.
+With this modification, the vectors $\BFp(m,n) = \frac{1}{3^{mn}}
+\BFL(m,n,0)$ are probability distributions over the border states
+and $\mathbf{P}_m = \frac{1}{3^m} \BFT_m$ is a probability
+transition matrix, so that $\BFp(m,n+1) = \mathbf{P}_m \BFp(m,n)$
+describes the change in distribution of border states
+when a new random column is added. Since $\mathbf{P}_m$ is a
+stochastic matrix, i.e. the sum of all columns is one, it has a
+largest eigenvalue of 1. The corresponding eigenvector has a 1 for the
+``illegal'' state and zero for all others, i.e.\ the illegal state is
+an absorbing state, which is not surprising since
+pseudolegality can only get lost under board extension, not regained.
+
+\subsection{The Dynamic Programming algorithm}
+\label{DP-algorithm}
+
+The algorithm starts from the unit state vector $\BFL(m,0,0)$
+(which has a 1 for the all-edge state only),
+and then performs $mn$ linear transformations
+(the first $m$ of which operate on edge states, while the rest,
+of the form $\BFT_{m,y}$, operate on border states)
+to obtain $\BFL(m,n,0)$.
+Instead of keeping exact counts $L(m,n,y,s)$ as vector elements,
+we use state class counts modulo some number $M$ close to $2^{64}$.
+Running the algorithm $\lceil mn \log_2(3) / 64\rceil$
+times with different, relatively prime, moduli
+gives us a set of equations \[L(m,n) = a_i \bmod M_i,\]
+which is readily solved using the Chinese Remainder Theorem (CRT).
+This technique trades off memory and diskspace (which are more constrained)
+for time. There is an interesting side-benefit of using chinese remaindering:
+automatic error detection. If, for instance,
+a single bitflip in memory should corrupt one of the remainders,
+then reconstruction of the full count from the remainders will yield
+a value that's way off, which will be obvious when comparing with the
+approximation formula we'll derive in a later section.
+
+The heart of the algorithm is an efficient representation of
+border state classes, using just 3 bits per point, or $3m$ bits for
+a state class. This makes the standard height of $m=19$ fit
+comfortably in 64-bit integers.
+The non-crossing connections can be represented with just 2 booleans
+per libertyless stone: whether it has a connection above it, and whether
+it has a connection below it.
+The representation further exploits the fact that neighbouring points
+in the border highly constrain each other. Figure~\ref{borderdfa}
+shows possible transitions from one point to the next in a ``bump-free''
+$0$-state. Upward and downward pointing arrows from the line
+indicating lack of liberties represent the two boolean flags.
+
+\begin{figure}
+\begin{center}
+\epsfxsize=10cm \epsfbox{borderdfa.eps}
+\end{center}
+\caption{Intra-border transitions.}
+\label{borderdfa}
+\end{figure}
+
+Edges between boxed sets of points indicate the presence of edges from all
+points in one set to all points in the other.
+Next to each point is shown its 3-bit code. Note that no point
+has two different transitions to same numbered points. 
+This reflects the fact that two libertyless adjacent stones have the same
+color if and only if they are connected, and a stone with liberties cannot
+be adjacent to a libertyless stone of the same color.
+The algorithm uses code 0 for `edge' points in edge states.
+Two pieces of information are still lacking; the color of a libertyless
+stone at $(x,0)$, and the color of a libertyless stone on $(x-1,y)$, which
+is not adjacent to the previous border point at $(x,y-1)$.
+However, since we represent state classes rather than states, we can
+assume that $(x-1,y)$, if non-empty, is always white.
+In this case, the color of a libertyless stone at $(x,0)$ can be stored
+in the boolean indicating connections above, since the latter is always false.
+If $(x-1,y)$ is empty, then we can assume any stone on $(x,0)$ is white.
+If both $(x-1,y)$ and $(x,0)$ are empty then we can normalize
+the color of e.g. the bottom-most stone on the border.
+
+In order to compute $\BFL(m,n,y+1) = \BFT_{m,y} \BFL(m,n,y)$,
+the algorithm loops over all state-count pairs $(s,i)$ in $\BFL(m,n,y)$,
+computes the 2 or 3 successors $s'$ of $s$, and stores the new pairs
+$(s',i)$ in some data structure.
+Matching pairs $(s',i)$ and $(s',j)$ need to be combined into a single
+pair $(s',i+j \bmod M)$, which is easy if all states can be kept in memory.
+For large computations, like $m=19$, this is not possible and the
+state-count pairs need to be stored on disk. To allow for efficient combining
+of states, we collect as many pairs as possible in memory, before flushing
+them all to disk in sorted order. To save space, we store only the differences
+between consecutive states (using 7 bits per byte, with
+the 8th bit indicating the last byte).
+Note that a state can appear in as many files as it has
+predecessors in $\BFL(m,n,y)$.
+The total number of state-count-pairs in all output files is thus
+larger than the number of $(y+1)$-states by a factor in the range $[1,3]$.
+This {\em redundancy} is the average number of files in which
+a $(y+1)$-state occurs. Merging all output files while combining like pairs
+removes this redundancy and produces the required $\BFL(m,n,y+1)$.
+To keep redundancy small, we want
+the different predecessors of a state to be close together
+in the input ordering, so that combination can take place before
+a memory flush.
+This ordering depends on how the $m$ 3-bit fields are joined into a
+$3m$ bit integer. We do this in different ways, such that the most variable
+fields, namely, those close to $y$, end in up the less significant
+bits of the $3m$ bit integer.
+
+It turns out that the computation of $\BFT_{m,y}$ as described above,
+{\em precisely} fits the Google {\em MapReduce} framework described
+in~\cite{DG04}. Our map function maps a state-count pair $(s,i)$ to a
+list of 2 or 3 new pairs $(s',i)$, while our reduce function merely
+sums modulo $M$.
+
+Having completed all $mn$ linear transformations,
+which gives us $\BFL(m,n,0)$, we then sum all counters of legal
+states to get the desired $L(m,n) \bmod M$ result.
+
+\subsection{Complexity}
+The main factor in both time and space complexity is the number of
+state classes $s$. This may be upperbounded by ignoring the
+connection constraints (equivalent to balancing parentheses) and
+computing the largest eigenvalue of the intra-border transition matrix,
+which turns out to be $\lambda \sim 5.372$ (the largest root
+of $(\lambda-2)(\lambda^2-5\lambda-2)$). The number of paths
+of length $m$ through the intra-border transition graph, and hence $s$,
+is therefore bounded by $O(\lambda^m)$. 
+We thus need at most $\lambda^m(3m+64)$ bits plus the
+overhead for the datastructure which is at most linear,
+for a space complexity of $O(m \lambda^m)$.
+
+For time complexity, we have the product of the number of moduli,
+which is $\lceil mn \log_2(3) / 64\rceil$, the number $mn$ of passes,
+the number $O(\lambda^m)$ of states, and the amount of work $O(m)$ per state,
+which results in time $O(m^3 n^2 \lambda^m)$.
+
+\subsection{Results}
+\begin{table}
+\label{legalcounts}
+\begin{center}
+\begin{tabular}{|r|l|l|}
+\hline
+$n$ & \#digits & $L(n,n)$ \\ \hline
+1   & 1 & 1 \\
+2   & 2 & 57 \\
+3   & 5 & 12675 \\
+4   & 8 & 24318165 \\
+5   & 12 & 414295148741 \\
+6   & 17 & 62567386502084877 \\
+7   & 23 & 83677847847984287628595 \\
+8   & 30 & 990966953618170260281935463385 \\
+9   & 39 & 103919148791293834318983090438798793469 \\
+10  & 47 & 96498428501909654589630887978835098088148177857 \\
+11  & 57 & 793474866816582266820936671790189132321673383112185151899 \\
+12  & 68 & 5777425848951323899823797030748399932728721075699118965594265 \\
+    &    & 1331169 \\
+13  & 80 & 3724979230768639644229490476702451767424915794820871753325479 \\
+    &    & 9550970595875237705 \\
+14  & 93 & 2126677329003662242497893576504405980988058610832691271966238 \\
+    &    & 72213228196352455447575029701325 \\
+15  & 107 & 1075146430836138311876841375486612380973378882032784440276460 \\
+    &    & 1662870883601711298309339239868998337801509491 \\
+16  & 121 & 4813066963822755416429056022484299646486874100967249263944719 \\
+    &    & 599975607459850502222039591149331431805524655467453067042377 \\
+17 & 137 & 190793889196281992046057261818504652201510583381479222439672692319440 \\
+    &    & 59187214767997105992341735209230667288462179090073659712583262087437 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Number of legal $n\times n$ positions.}
+\end{table}
+
+Table~\ref{legalcounts} shows the number of legal positions.
+As the computational complexity suggests, the $L(17,17)$ result
+took more effort than previous combined.
+The computation took over 8000 CPU-hours and 3TB of disk space,
+generously provided by the Opteron based Linux Cluster of the INS group
+at the Center for Mathematics and Computer Science (CWI) in Amsterdam.
+
+A few more months of computing were spent by other people trying to
+factor the number following its announcement on {\tt rec.games.go} on
+August 18, 2006.
+The smallest factor of $46542825577$ was easy to find but the remaining
+126 digit composite number proved a hard nut to crack.
+Thanks to Paul Leyland and the General Number Field
+Sieve, the middle factor of $2518026579235045782504604934907161589529$
+was found by December 23, 2006.
+
+\subsection{Heuristic Sampling Results}
+Pang Chen~\cite{C92}, improving on earlier work of Knuth and Purdom,
+developed an elegant unbiased estimator of treesize that takes
+advantage of heuristic knowledge in the form of a stratifier.
+This is a function on tree nodes which must decrease when following
+tree edges, and which should correlate with subtree size, since
+this determines the estimator variance.
+Pang demonstrated the power
+of his Heuristic Sampling algorithm on the problem of counting
+uncrossed knight's tours on a chess board.
+As stratifier he used the number of unvisited squares reachable by
+{\em currently valid} knight moves.
+
+We applied his technique to the problem of counting legal positions
+by estimating
+the size of the tree of successive border states to depth $n^2$.
+As stratifier we use the pair (remaining depth,
+$m$ minus the number of libertyless strings).
+For each boardsize of interest, we took the average of
+between $10^5$ and $10^7$ runs of the Heuristic Sampling algorithm,
+with the results shown in Table~\ref{samplingcounts}.
+
+\begin{table}
+\label{samplingcounts}
+\begin{center}
+\begin{tabular}{|r|l|l|}
+\hline
+$n$ & \#digits & $L(n,n)$ \\ \hline
+18  & 153 & $\sim 0.0173 \cdot 3^{324} \sim 6.6 \cdot 10^{152}$ \\
+19  & 171 & $\sim 0.01196 \cdot 3^{361} \sim 2.082 \cdot 10^{170}$ \\
+29  & 398 & $\sim 1.2 \cdot 10^{-4} \cdot 3^{841} \sim 2.2 \cdot 10^{397}$ \\
+39  & 720 & $\sim 2.4 \cdot 10^{-7} \cdot 3^{1521} \sim 1.2 \cdot 10^{719}$ \\
+49  & 1136 & $\sim 9 \cdot 10^{-11} \cdot 3^{2401} \sim 3.5 \cdot 10^{1135}$ \\
+59  & 1647 & $\sim 7 \cdot 10^{-15} \cdot 3^{3481} \sim 5 \cdot 10^{1646}$ \\
+69  & 2253 & $\sim 1.1 \cdot 10^{-19} \cdot 3^{4761} \sim 4 \cdot 10^{2252}$ \\
+79  & 2954 & $\sim 3 \cdot 10^{-25} \cdot 3^{6241} \sim 2 \cdot 10^{2953}$ \\
+89  & 3749 & $\sim 2 \cdot 10^{-31} \cdot 3^{7921} \sim 4 \cdot 10^{3748}$ \\
+99  & 4639 & $\sim 2 \cdot 10^{-38} \cdot 3^{9801} \sim 4 \cdot 10^{4638}$ \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Estimated Number of legal $n\times n$ positions.}
+\end{table}
+
+\subsection{Asymptotic Bounds}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=9cm \epsfbox{knight.eps}
+\end{center}
+\caption{Knight subset of points on $5 \times 5$ and $10 \times 10$ boards.}
+\label{knight}
+\end{figure}
+
+Let $K$ denote the set of points on an $m \times n$ board,
+reachable from one (3,3) point with `orthogonal'
+knight moves, as shown in Figure~\ref{knight}. For simplicity,
+assume that $m$ and $n$ are divisible by $5$, so that set $K$ has size $mn/5$
+(for other $m,n$, $|K|$ equals $mn/5$ rounded up or down).
+We use $K$ to derive both lower and upper bounds on $L(m,n)$.
+
+\begin{theorem}
+\label{asymp}
+For $m,n$ divisible by 5,
+\[ 3^\frac{4mn}{5}(1-\frac{2}{81})^\frac{2(m+n)}{5} \leq L(m,n) \leq
+   3^{ mn  }(1-\frac{2}{81})^\frac{2(m+n)}{5}(1-\frac{2}{243})^\frac{mn-2(m+n)}{5}. \]
+\end{theorem}
+
+\begin{proof}
+For the lower bound, color the points in $K$ empty, and all other
+points randomly. Then illegality can only arise at the $2(m+n)/5$
+points on the edge that neither belong to $K$ nor neighbour $K$. 
+For each such point, the probability of being a libertyless stone
+is $2\cdot 3^{-4}=2/81$, and these events are independent,
+so the whole position is legal with probability $(1-2/81)^{2(m+n)/5}$.
+
+For the upper bound, we color all points randomly and only check if any
+point in $K$ is a one-stone string without liberties.
+For each of the $2(m+n)/5$ edge points
+of $K$ this happens with probability $2/81$ and for each of the
+$mn/5-2(m+n)/5$ interior points of $K$ this happens with probability
+$2\cdot 3^{-5}=2/243$. Again, these events are all independent.
+\end{proof}
+
+\subsection{The base of liberties}
+
+The previous section shows that $L(m,n)^{1/mn}$ is roughly
+between $3^{4/5} \sim 2.4$ and $3(1-\frac{2}{243})^{1/5} \sim 2.995$.
+In this section we prove that $L(m,n)^{1/mn}$ in fact converges to
+a specific value $L$, which we call the {\em base of liberties}.
+This is the 2-dimensional analogue of the 1-dimensional growth rate
+$\lambda_1 \sim 2.7693$ derived in Section~\ref{1xn-boards}.
+
+Fix $m$ and $n$. Consider any $M=q_m m + r_m$ and
+$N=q_n n + r_n$ with $0\leq r_m < m, 0\leq r_n < n$.
+Since tiling legal positions together preserves legality, we have
+\[ L(M,N) \geq L(m,n)^{q_m q_n} L(m,r_n)^{q_m} L(r_m,n)^{q_n} L(r_m,r_n). \]
+This proves
+
+\begin{theorem}
+$\ln L(m,n)$ is superadditive in both arguments.
+\label{super-additive}
+\end{theorem}
+
+\begin{theorem}
+$\lim_{\min(m,n)\rightarrow \infty} L(m,n)^{1/m n}$ converges to some value $L$.
+\label{base-of-liberties}
+\end{theorem}
+
+\begin{proof}
+We extend the proof of Fekete's theorem to 2 dimensions:
+\[ \liminf_{M,N\rightarrow \infty} \frac{\ln L(M,N)}{M N} \geq
+\liminf_{M,N\rightarrow \infty} \frac{q_m q_n}{M N} \ln L(m,n)
++ \frac{q_m}{M N} \ln L(m,r_n) + \]
+\[ + \frac{q_n}{M N} \ln L(r_m,n)
++ \frac{1}{M N}\ln L(r_m,r_n) = \frac{\ln L(m,n)}{m n}. \]
+Since $m$ and $n$ were arbitrary, we get
+\[ \liminf_{M,N\rightarrow \infty} \frac{\ln L(M,N)}{M N} \geq
+\sup_{m,n \geq 1} \frac{\ln L(m,n)}{m n}, \]
+hence $\frac{\ln L(m,n)}{m n}$ converges to some value $\ln L$.
+\end{proof}
+
+\subsection{An Asymptotic Formula}
+
+Theorems~\ref{base-of-liberties} and \ref{mxn-asymptotics}
+together imply that $a_m^{1/mn} \lambda_m^{1/m}$,
+and hence $\lambda_m^{1/m}$
+(since $n$ can go to infinity arbitrarily faster than $m$),
+converge to $L$.
+Table~\ref{small-board-recurrences} confirms that the $\lambda_m$
+values behave roughly as $L^m$ for some $L$.
+In this section we extend Theorem~\ref{mxn-asymptotics}
+to derive a much stronger result, albeit contingent on a
+conjecture about how fast the subdominant terms disappear. The central
+idea is that since $\ln(L(m,n))$ is asymptotically linear in $n$ for
+each $m$, and symmetric, it can be expected to be asymptotically
+bilinear in $m$ and $n$.
+
+The parameters guaranteed by Theorem~\ref{mxn-asymptotics}
+may be obtained from $L()$ as follows:
+
+\begin{coro}
+  \[
+  \begin{split}
+    \lambda_m &= \lim_{n \rightarrow \infty} \frac{L(m,n+1)}{L(m,n)}, \\
+    a_m &= \lim_{n \rightarrow \infty} \frac{L(m,n)}{\lambda_m^n}, \\
+    r(m,n) &= \frac{L(m,n)}{a_m^{} \lambda_m^n} - 1.
+  \end{split}
+  \]
+\end{coro}
+
+In practice the $\phi_m$ values are small enough that a number of
+$a_m$, $\lambda_m$, and $r(m,n)$ can be computed with good accuracy
+from the $L(m,n)$ values that are practical to compute by the dynamic
+programming algorithm. Before looking further at these we derive a
+number of lemmas about symmetric and asymptotically linear functions.
+Recall that the discrete derivative $\Delta$ is defined by
+$\Delta f(n) = f(n+1)-f(n)$.
+
+First a discrete integration result
+needed in Lemma~\ref{asymptotically-linear-m};
+
+\begin{lemma}
+  \label{technical-lemma}
+  If $\Delta g(n) = O(\phi^n)$ for some $0 \leq \phi < 1$
+  then $g(n) = \gamma + O(\phi^n)$ for some $\gamma$.
+  Likewise $\Delta g(n) = O(n\phi^n)$
+  implies $g(n) = \gamma + O(n \phi^n)$ for some $\gamma$.
+\end{lemma}
+\begin{proof}
+  Since $\sum_{i\geq n} \Delta g(i) = O(\sum_{i\geq n} \phi^i) = O(\phi^n)$,
+  $\lim_{n->\infty}g(n)$ converges to some value $\gamma$, and the conclusion
+  follows.
+  The other case is similar, with convergence implied by
+  $\sum_{i\geq n} i\phi^i =
+  \frac{n\phi^n}{1-\phi}+\frac{\phi^{n+1}}{(1-\phi)^2} = O(n\phi^n)$.
+\end{proof}
+
+\begin{lemma}
+  \label{symmetric-asymptotically-linear-n}
+  Let $x(m,n) = u(m) + n v(m) + w(m,n)$ be symmetric. Then
+  \[ \Delta^2 v(n) = v(n+2)-2v(n+1)+v(n) = w(n+1,n+2)-w(n+2,n+1) \]
+  \[ + w(n,n+1)-w(n+1,n) - w(n,n+2) + w(n+2,n) \]
+  and
+  \[ \Delta u(n) = -n v(n+1) + (n+1) v(n) - w(n+1,n) + w(n,n+1). \]
+\end{lemma}
+
+\begin{proof}
+  \[
+  \begin{split}
+    0 &= x(n+2,n+1)-x(n+1,n+2) \\
+&\phantom{=} + x(n+1,n)-x(n,n+1) + x(n,n+2)-x(n+2,n) \\
+    &= u(n+2)+(n+1)v(n+2)+w(n+2,n+1) \\
+&\phantom{=} -u(n+1)-(n+2)v(n+1)-w(n+1,n+2) \\
+&\phantom{=} +u(n+1)+nv(n+1)+w(n+1,n) - u(n)-(n+1)v(n)-w(n,n+1) \\
+&\phantom{=} +u(n)+(n+2)v(n)+w(n,n+2) - u(n+2)-nv(n+2)-w(n+2,n) \\
+    &= v(n+2) -2v(n+1) + v(n) -w(n+1,n+2)+w(n+2,n+1) \\
+    &\phantom{=} -w(n,n+1)+w(n+1,n) +w(n,n+2)-w(n+2,n),
+  \end{split}
+  \]
+  \[
+  \begin{split}
+    0 &= x(n+1,n) - x(n,n+1) \\
+      & = u(n+1) + n v(n+1) + w(n+1,n) - u(n) - (n+1) v(n) - w(n,n+1).
+  \end{split}
+  \]
+\end{proof}
+
+\begin{lemma}
+  \label{asymptotically-linear-m}
+  If additionally all $w()$ terms in the above are $O(\phi^n)$
+  for some $\phi < 1$, then there exist 
+  $\alpha$, $\beta$ and $\lambda$ such that
+  \[
+  \begin{split}
+    v(m) &= \beta + \lambda m + O(\phi^m), \\
+    u(m) &= \alpha + \beta m + O(m \phi^m).
+  \end{split}
+  \]
+\end{lemma}
+
+\begin{proof}
+  Lemma~\ref{symmetric-asymptotically-linear-n} together with
+  the assumption give $\Delta^2 v(n) = O(\phi^n)$.
+  Applying Lemma~\ref{technical-lemma} once to $g(n)=\Delta v(n)$ gives
+  $\Delta v(n) = \lambda + O(\phi^n)$ and applying it again to
+  $g(n)=v(n)-\lambda n$ gives $v(n)=\beta+\lambda n+O(\phi^n)$.
+  
+  Lemma~\ref{symmetric-asymptotically-linear-n} also gives
+  \[
+  \begin{split}
+    \Delta u(n) &= -n v(n+1) + (n+1) v(n) - w(n+1,n) + w(n,n+1) \\
+    &= -n (\beta + \lambda (n+1) + O(\phi^{n+1}))
+        + (n+1)(\beta + \lambda n + O(\phi^n)) + O(\phi^n) \\
+    &= \beta + O(n \phi^n).
+  \end{split}
+  \]
+  
+  A third application of Lemma~\ref{technical-lemma} to
+  $g(n)=u(n)-\beta n$ gives $u(n) = \alpha + \beta n + O(n \phi^n)$.
+\end{proof}
+
+\begin{coro}
+  \label{asymptotically-bilinear}
+  Under the assumptions above, for $n=\Theta(m)$,
+  \[ x(m,n) = \alpha + \beta(m + n) + \lambda mn + O(m\phi^m). \]
+  %for both $m$ and $n$ large.
+\end{coro}
+
+%A sharper bound on $w(m,n)$ gives the stronger result that $v(m)$ must
+%be exactly linear, not only asymptotically linear.
+
+%\begin{lemma}
+%  \label{too-strong-bound}
+%  If also $|w(m,n)| < C \phi^n$, for some $C>0$ and all $m,n$, then
+%  \[
+%  v(m) = \beta + \lambda m.
+%  \]
+%\end{lemma}
+%
+%\begin{proof}
+%  \[
+%  \begin{split}
+%    0 &= \lim_{n \rightarrow \infty} (\frac{x(m,n)}{n} -
+%    \frac{x(n,m)}{n}) \\
+%    &= \lim_{n \rightarrow \infty}(\frac{u(m)}{n} + v(m) +
+%    \frac{w(m,n)}{n} - \frac{u(n)}{n} - \frac{m v(n)}{n} - 
+%    \frac{w(n,m)}{n}) \\
+%    &= v(m) - \lim_{n \rightarrow \infty} \frac{u(n)}{n} - m \lim_{n
+%      \rightarrow \infty} \frac{v(n)}{n} = v(m) - \beta - \lambda m
+%  \end{split}
+%  \]
+%\end{proof}
+
+Taking natural logarithms of the expression for $L(m,n)$ in
+Theorem~\ref{mxn-asymptotics} we have
+\[
+\ln(L(m,n)) = \ln(a_m) + n \ln(\lambda_m) + \ln(1+r(m,n)),
+\]
+which is in the expected form with $x(m,n) = \ln(L(m,n))$,
+$u(m) = \ln(a_m)$, $v(m) = \ln(\lambda_m)$, and $w(m,n) =
+\ln(1+r(m,n))$. The question is whether $\ln(1+r(m,n))$ satisfies
+the conditions on $w()$ in the lemmas.
+
+\begin{figure}
+\begin{center}
+\epsfxsize=10cm \epsfbox{logrdiag.eps}
+\end{center}
+\caption{$\ln(1+r(n,n))$ and friends}
+\label{logr}
+\end{figure}
+
+Although one can show that for fixed $m$,
+$\ln(L(m,n)) - \alpha - \beta(m + n) - \lambda mn = \Omega(n)$,
+%Gunnar: we shldn't mention alpha and beta that are only guaranteed
+%to exist for vanishing r(m,n)
+%We also need to refer to and explain the plots above,
+%in particular the parameter d and the meaning of the y-axis.
+we do expect this quantity to vanish for proportional $n$:
+
+\begin{conj}
+  \label{conjecture}
+  $r(m,n) = O(\phi^m)$ for some $\phi < 1$ and  $n=\Theta(m)$.
+\end{conj}
+
+(This should be read as: for any constant $c \geq 1$,
+ there exists a $\phi < 1$ such that
+ $r(m,n) = O(\phi^m)$ for all $m/c \leq n \leq cm$.)
+This assumption suffices to apply
+Corollary~\ref{asymptotically-bilinear} to $\ln L(m,\Theta(m))$,
+which, after exponentiation, gives
+
+\begin{theorem}
+Conjecture~\ref{conjecture} implies
+  \label{asymptotic-formula}
+  \[
+  L(m,n) = A\,\, B^{m+n} L^{mn} (1+O(m\phi^m))
+  \]
+  for some constants $A$, $B$, $\phi<1$, and $n=\Theta(m)$.
+\end{theorem}
+
+The constants $A$, $B$, and $L$ can all be computed as limits of
+expressions involving legal counts of square and almost-square boards.
+
+\begin{coro}[contingent on Conjecture~\ref{conjecture}]
+  \[
+  \begin{split}
+    L &= \lim_{n \rightarrow \infty} \frac{L(n,n)L(n+1,n+1)}{L(n,n+1)^2}, \\
+    B &= \lim_{n \rightarrow \infty} \frac{L(n,n+1)}{L(n,n)L^n}
+      = \lim_{n \rightarrow \infty}
+    \frac{L(n,n)}{L(n,n-1)L^n}, \\ 
+    A &= \lim_{n \rightarrow \infty}
+    \frac{L(n,n)}{B^{2n} L^{n^2}}.
+  \end{split}
+  \]
+\end{coro}
+
+\begin{table}
+\label{offlegalcounts}
+\begin{center}
+\begin{tabular}{|r|l|}
+\hline
+$n$ & $L(n,n+1)$ \\ \hline
+1   & 5 \\
+2   & 489 \\
+3   & 321689 \\
+4   & 1840058693 \\
+5   & 93332304864173 \\
+6   & 41945191530093646965 \\
+7   & 166931297609667912727898521 \\
+8   & 5882748866432370655674372752123193 \\
+9   & 1835738613899845421140262364853644706891109 \\
+10  & 5072588588647327658457862518216696854885169490987149 \\
+11  & 124118554774307129694783556890846966815009879092863579679259393 \\
+12  & 26892554058860272116972562366415920138007095980551558908000982332 \\
+    & 405743333 \\
+13  & 51595955665685681166597566866805181435596339502695699293823422273 \\
+    & 656970477373415200373 \\
+14  & 87657189470474043577625386556165159467857790316618825847295568112 \\
+    & 5289495868953613359454403019145877 \\
+15  & 13187051224464575929788847232994787058026625692448568172845808657 \\
+    & 8687538959472921550847035733890182662513180743513 \\
+16  & 17566939874522767507492043332778736637455188609843447383651064715 \\
+    & 9450821039563378374569811240252763776406712988379278644250456677 \\
+17 & 20722054276190233030395875202363901217542740727187846094339981969332826\\
+& 08067036314403465202963700297341152216286750576593627459392979397487964077\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Legal counts of almost square boards.}
+\end{table}
+
+Of course $L$ could also be approximated according to its definition
+as $L(n,n)^{n^{-2}}$ but the above formula offers much better convergence.
+Using the almost-square legal counts in Table~\ref{offlegalcounts}, as
+computed by our algorithm, our best estimates using $L(17,17)$,
+$L(17,16)$, and $L(16,16)$ are 
+\[
+\begin{split}
+  L &\approx 2.9757341920433572493, \\
+  B &\approx 0.965535059338374, \\
+  A &\approx 0.8506399258457.
+\end{split}
+\]
+Table~\ref{Ldigits} shows the rapid convergence of
+$L(n,n)L(n+1,n+1)/L(n,n+1)^2$.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|r|l|}
+\hline
+$n$ & $L(n,n)L(n+1,n+1)/L(n,n+1)^2$ \\ \hline
+1   & 2.28 \\
+2   & 3.0 \\
+3   & 2.979 \\
+4   & 2.9756 \\
+5   & 2.975732 \\
+6   & 2.9757343 \\
+7   & 2.9757341927 \\
+8   & 2.9757341918 \\
+9   & 2.9757341920444 \\
+10  & 2.9757341920441 \\
+11  & 2.975734192043350 \\
+12  & 2.975734192043355 \\
+13  & 2.97573419204335727 \\
+14  & 2.975734192043357255 \\
+15  & 2.97573419204335724932 \\
+16  & 2.9757341920433572493662 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Convergence to the base of liberties $L$.}
+\label{Ldigits}
+\end{table}
+
+%\begin{coro}
+%Conjecture~\ref{conjecture} implies
+%  \[
+%    L=\lim_{n \rightarrow \infty} L(n,n)^{n^{-2}} = \lim_{m \rightarrow
+%      \infty} \lambda_m^{1/m} = \lim_{m \rightarrow \infty}
+%    \frac{\lambda_{m+1}}{\lambda_m}.
+%  \]
+%\end{coro}
+
+Although the formula for $L(m,n)$ is only asymptotic, the convergence
+turns out to be quite fast. Compared to the exact results in
+Table~\ref{legalcounts}, it achieves relative accuracy $0.99993$ at $n=5$,
+$0.99999999$ at $n=9$, and $1.00000000000025$ at $n=13$. It is
+consistent with all the simulated results. For $n=99$ it gives the
+same result of $4 \cdot 10^{4638}$.
+Accuracy is also excellent far away from the diagonal.
+E.g., at $L(7,268)$, the relative accuracy is still 1.0000007,
+witnessing the wide range of application of Theorem~\ref{asymptotic-formula}.
+
+For $19 \times 19$, the formula gives $2.08168199382 \cdot 10^{170}$,
+of which we can expect all digits to be correct.
+
+\section{Comparison with other games}
+\label{othergames}
+In Go, the question of what constitutes a legal position
+is very easy to decide. Not so in some other popular
+games. In Chess there are so called problems of {\em retrograde analysis},
+which ask how a position could have possibly arisen. Anyone having
+tried these problems can appreciate their complexity.
+But even in as simple a game as Connect-4, the problem
+of deciding if a position could have legally arisen, can be shown to
+be NP-hard~\cite{GW}. In such cases we cannot hope to find exact counts
+and need to settle for upper bounds.
+
+For Chess, a straightforward Huffman encoding
+(ignoring history attributes such as castling rights) gives an upperbound of
+$2^{32\cdot1 + 2(8\cdot 3+6\cdot 5 + 2 \cdot 6)}
+= 2^{164} \sim 2.3 \cdot 10^{49}$
+positions, a number in between $L(10,10)$ and $L(11,11)$.
+
+For Connect-4 played on a board with $n$ columns of height $m$, each column
+can be encoded in $m+1$ bits, giving an upperbound of $2^{n(m+1)}$ positions.
+
+Gomoku, also known as Go-bang, is more closely related to Go.
+The goal in Gomoku is to obtain 5 consecutive
+stones of one's color along an orthogonal or diagonal line.
+We could thus define a legal position as one
+in which no 5 same colored stones appear in a row (ignoring the required
+near-equality of numbers of black and white stones, or allowing the option
+of passing).
+This could be computed exactly with a Dynamic Programming algorithm,
+with states comprising a 4 row thick border. The resulting state space
+size of $3^{4m}$ however limits the approach to $m=6$ or so. 
+The alternative of using the inclusion-exclusion formula to count
+the illegal positions is similarly limited, since a $6 \times 6$ board
+already has 32 possible 5-in-a-rows, all subsets of which have to be
+considered.
+
+We note that in contrast to Theorem~\ref{super-additive},
+the function $\ln L(m,n)$ for Gomuku is {\em subadditive}, from which
+Theorem~\ref{base-of-liberties} can be similarly derived.
+Under a naive assumption of independence of events,
+the ``base of gomoku'' would have a value of
+$1+2(1-\frac{1}{3}^4)^4 \sim 2.90$, much less than for Go.
+%Gunnar: an event here is a stone being the rightmost (or toprightmost/
+% topmost/topleftmost) of a 5 in-a-row. Please check
+
+\section{Counting games}
+\subsection{Exact values}
+By Lemma~\ref{gamepaths}, the number of games equals the number of simple
+paths in the game graph. For very small boards, we can find these
+numbers by brute force enumeration, as shown in Table~\ref{numberofgames}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+$m \setminus n$ & 1 & 2 & 3 & 4 & 5 & 6 \\ \hline
+1 & 1 & 9 & 907 & 2098407841 & $\sim 10^{31}$ & $\sim 10^{100}$ \\
+2 & & 386356909593 & $\sim 10^{86}$ & $10^{\sim 5.3\cdot 10^2}$ & & \\
+3 & & & $10^{\sim 1.1\cdot 10^3}$ & & & \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Exact and estimated number of games on small boards.}
+\label{numberofgames}
+\end{table}
+
+\subsection{Approximation}
+Just as with legal positions, we can estimate the size of the game tree,
+and hence the number of games, using Heuristic Sampling.
+A natural stratifier,
+similar to the one used by Pang Chen for uncrossed knight tours,
+is the number of positions reachable through {\em currently unvisited}
+positions.  Using this stratifier, we obtained the
+estimates shown in Table~\ref{numberofgames}, with the location of the
+$\sim$-symbol indicating (un)certainty about the order of magnitude.
+%Unfortunately, the larger numbers are bound to be inaccurate, since
+%the variance can be very large. As an extreme case, consider a
+%full binary tree of depth $m$ and size $2^{m+1}-1$ one of whose leaves
+%is replaced by a full binary tree of depth $n$ and size $2^{n+1}-1$.
+%The variance is $2^{-m} (2^{m+n+1}-1-\mu)^2+(1-2^{-m})(2^{m+1}-1-\mu)^2=
+%\Theta(2^{m+2n})$, giving a standard deviation of $\Theta(2^n \sqrt{2^m})$,
+%which is exponentially larger than the size of the tree. This suggests that
+%it is easy to overestimate the tree size. But underestimates are no less
+%likely, since simulation may never get into the deep but bushy parts of
+%the game tree.
+
+\subsection{Upper bounds}
+We can relate the number of simple paths to the product of outdegrees.
+First we need a technical lemma.
+
+\begin{lemma}
+\label{outdeg2}
+On boards larger than $1\times 1$, every node in the game graph has
+outdegree at least 2.
+\end{lemma}
+
+\begin{proof}
+For the empty position,
+the Lemma holds by assumption on board size.
+For other nodes, consider one of its strings. If this string
+has at least two liberties, then these provide two legal moves for its owner.
+If it has only one liberty, then the opponent can move there to capture, while
+a move by the owner there cannot result in a single-stone suicide.
+\end{proof}
+
+Now consider the game tree, consisting of all simple paths. We want to
+avoid internal nodes with only one child, so we make them binary
+by duplicating their child subtree.
+By Lemma~\ref{outdeg2}, the resulting tree still has no more than
+$(\prod_v \mbox{outdeg}(v))/\mbox{mindeg}$ leaves,
+where $\mbox{mindeg} \geq 2$ is the minimum outdegree.
+Furthermore, since the tree is at least binary, it
+must have fewer internal nodes than leaves. This proves
+
+\begin{lemma}
+The number of games on an $m \times n$ board with, $mn>1$, is at most
+$\prod_v \mbox{outdeg}(v)$.
+\end{lemma}
+
+By Corollary~\ref{outdeg}, this is in turn bounded by $(2mn)^{L(m,n)}$.
+Most positions have about $mn/3$ empty points though, and some of the moves
+are illegal self-loops, so the average outdegree is much less than $2mn$.
+
+\begin{theorem}
+\label{games-upper-bound}
+The number of games on an $m \times n$ board is at most $(mn)^{L(m,n)}$.
+\end{theorem}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+$m \setminus n$ & 1 & 2 & 3 & 4 \\ \hline
+1     & 0 & 2.4   & 2.8   & 3.512 \\
+2     &   & 3.368 & 4.728 & 6.208 \\
+3     &   &       & 6.801 & 8.933 \\
+4     &   &       &       & 11.741 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Average outdegree on small boards.}
+\label{avgoutdeg}
+\end{table}
+
+\begin{proof}
+The Theorem holds trivially for $mn=1$, which has only 1 position and 1 game,
+and for $mn=2$, which has only 5 positions and 9 games.
+Table~\ref{avgoutdeg} shows that for other small boards,
+the average outdegree is smaller than $mn$.
+By the Chernoff bounds on binomial tails, the fraction of legal positions with
+at least $mn/2$ empty points diminishes exponentially on larger boards, for
+which the average outdegree is close to $2mn/3$.
+To complete the proof, note that the product of outdegrees
+equals the $L(m,n)$'th power of their geometric average, which
+is upperbounded by the arithmetic average.
+\end{proof}
+
+This bound is quite crude for small boards. For example,
+the $1 \times 3$ board has an average outdegree of $\frac{42}{15}=2.8$,
+an outdegree product of $3\cdot 2^{19}=1572864$ which is bounded by
+$3^{15}=14348907$, while the actual number of games is only 907.
+
+We conjecture that for any $mn \geq 3$, the number of games is less than
+$(2mn/3)^{L(m,n)}$.
+The fact that legal positions have on average more empty points than
+arbitrary positions should be amply offset by the removal
+of self-loops and, more importantly, the widening gap between
+geometric and arithmetic averages.
+
+\subsection{Lower bounds}
+Note that the game graph need not be Hamiltonian, and constructing
+a game visiting even $2^{mn}$ legal positions is a major
+challenge (achievable for one-dimensional boards as we'll see later).
+We can still get a nontrivial lower bound by visiting only
+a highly structured subset of legal positions.
+
+\begin{theorem}
+\label{partition}
+Suppose the $mn$ points on the board can be partitioned
+into 3 sets $B,W,E$ such that
+\begin{itemize}
+\item
+$|B|=|W|=k, |E|=l=mn-2k$,
+\item
+$B$ and $W$ are connected,
+\item
+each point in $E$ is adjacent to both $B$ and $W$.
+\end{itemize}
+Then there are at least $(k!)^{2^{l-1}}$ possible games,
+all lasting over $k{2^{l-1}}$ moves.
+\end{theorem}
+
+\begin{proof}
+First we recall some properties of binary {\em Gray} codes.
+The $1$ bit Gray code $G_1$ is $0,1$, while $G_{l+1}$ consists of $G_l$
+in which each bitstring is extended with a 0,
+followed by the reverse of $G_l$
+in which each bitstring is extended with a 1.
+Thus, $G_2 = 00,10,11,01$ and $G_3=000,100,110,010,011,111,101,001$.
+Succesive strings differ in exactly one bit, and the sequence of bits
+flipped is the so-called {\em binary carry schedule}
+$0,1,0,2,0,1,0,3,0,1,0,2,\ldots$.
+Consider the successive changes in Hamming weight.
+Denote an increment by $+$ and a decrement by $-$.
+Since the initial bit is flipped every other step,
+every $4i$-th sign is $+$ while every $4i+2$-nd sign is $-$.
+As a consequence, $G_l$ has $2^{l-1}-1$ sign changes.
+Furthermore, the initial bit is 1 inbetween a change from $+$ to $-$,
+and is 0 inbetween a change from $-$ to $+$.
+
+Let $\{E_i\}_{0\leq i<2^l}$ be the sequence of all subsets of $E$
+corresponding to the $l$-bit Gray code. 
+Let $E_i^+$ be the position with only black stones on $B \cup E_i$ and
+$E_i^-$ the position with only white stones on $W \cup (E \setminus E_i)$.
+By the connectivity assumptions, these positions have only one string.
+See Figure~\ref{gray3} for an illustration of the 3 bit Gray code
+and corresponding positions.
+
+We now construct games as follows: first play from the empty board to
+$E_0^+$ in one of $k!$ ways. Then a black move takes us to
+$E_1^+$, and another takes us to $E_2^+$. Since the sign changes to $-$,
+we first move from $E_2^+$ to $E_2^-$ by letting white occupy all of $W$
+in one of $k!$ ways and then occupy $E \setminus E_2$, capturing black.
+Now a white
+move takes us to $E_3^-$. In this way we transform each $+$ into a
+black move, each $-$ into a white move, and each sign change into
+a capture sequence. We get $k!$ choices at the start, and at
+every sign change, for a total of $2^{l-1}$ times.
+
+It remains to show that no position is repeated.
+All $E_i^+,E_i^-$ positions are unique by construction.
+During a change from $E_i^+$ to $E_i^-$, by the above observation on
+sign changes, the point corresponding to the initial bit of
+the Gray code is black, so all
+intermediate positions can be uniquely associated with $E_i^+$.
+Similarly, during a change from $E_j^-$ to $E_j^+$, that same point is
+white and all intermediate positions can be uniquely associated
+with $E_i^-$.
+\end{proof}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=6cm \epsfbox{gray3.eps}
+\end{center}
+\caption{3-bit Gray code and corresponding positions.}
+\label{gray3}
+\end{figure}
+
+\begin{coro}
+There are between $2^{2^{n^2/2\,-O(n)}}$
+and $2^{2^{n^2 \log 3+\log\log n + O(1)}}$
+Go games on an $n\times n$ board,
+\end{coro}
+
+\begin{proof}
+On a square board of size $n\equiv 3 \bmod 4$, the partition shown
+in Figure~\ref{bwe} has parameters
+$k=|B|=|W|=n-1+(n-2)(n+1)/4$ and $l=2+(n-2)(n-1)/2$, giving a lower bound
+of $(k!)^{2^{l-1}} = 2^{2^{n^2/2\, -3n/2\,+\log k + \log \log k +O(1)}}$.
+The upper bound follows from Theorem~\ref{games-upper-bound}.
+\end{proof}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=5cm \epsfbox{BWE.eps}
+\end{center}
+\caption{Board partition for games lower bound.}
+\label{bwe}
+\end{figure}
+
+\begin{coro}
+The number $N$ of $19 \times 19$ Go games is
+\[ (103!)^{2^{154}} \leq N \leq 361^{0.012\cdot 3^{361}}, \]
+in binary
+\[ 2^{2^{163}} < N <2^{2^{569}}, \]
+and in decimal
+\[ 10^{10^{48}} < N <10^{10^{171}}. \]
+\end{coro}
+
+In one dimension, the conditions of Theorem~\ref{partition} can only
+be met by taking $E$ a singleton set, giving a useless bound.
+Fortunately, the highly structured nature of one-dimensional boards allows
+us to prove much better bounds.
+
+\begin{theorem}
+There are at least $2^{2^{n-1}}$ games on an $1 \times n$ board with $n\geq 2$,
+which last from $3\cdot 2^{n-1}-5$ up to $2^{n+1}-4$ moves.
+\end{theorem}
+
+\begin{proof}
+Number the points $0,1,\ldots,n-1$ from left to right.
+To any non-empty legal position we can assign a {\em predecessor}
+in which the leftmost stone, say on point $i$, is replaced by
+stones of the opposite color on points $0,1,\ldots,i-1$.
+If we assign to each position the number $\sum_{i\mbox{ occupied}} 2^i$,
+then the predecessor of a position is indeed numbered one less.
+The predecessor relation defines a spanning tree of the game graph which we
+call the {\em left-capturing} gametree, in which each legal
+position occurs at a depth equal to its number. Figure~\ref{leftcap}
+shows the left-capturing gametree for $n=3$.
+This is a binary tree; each node has 0,1, or 2 children, since at most
+2 positions can have the same predecessor.
+The two positions at maximum depth $2^n-2$ have a single string
+occupying all but the leftmost point. The path to such a position has
+$2^{n-2}$ positions with point $0$ occupied and point $1$ empty.
+Each of these latter positions could be skipped by moving directly
+from its predecessor to its successor, yielding $2^{n-2}$ binary choices.
+To double that amount, we consider games following both paths.
+For odd $n\geq 3$, we can move directly
+from the end of one path, e.g. {\tt .XXXX} to the second node {\tt O....}
+of the other path.
+For $n=2$, the Theorem is easily seen to hold.
+For even $n \geq 4$, we can move from the 3rd-to-last node of one path,
+e.g. {\tt ..XXXX}, to the skippable {\tt X.XXXX},
+to the third node {\tt .O....} of the other path.
+Either case gives us $2^{n-1}-1$ binary choices, since we lose
+one choice at the start of the second path.
+However, we also have a choice of which path to follow first,
+giving us the required $2^{n-1}$ choices. The
+shortest game is reached by skipping all on an even-sized board,
+while the longest game is reached by skipping nothing on an odd-sized board.
+\end{proof}
+
+\begin{figure}
+\begin{center}
+\epsfxsize=9cm \epsfbox{leftcap.eps}
+\end{center}
+\caption{Left capturing gametree.}
+\label{leftcap}
+\end{figure}
+
+\section{Hamiltonian games}
+The previous section showed the existence of games visiting a large
+fraction of all positions. The question arises if and when it
+is possible to have games encompassing {\em all} $L(m,n)$ legal
+positions.
+Inspired by graph theory, we call such games, as well as
+the board they're played on, {\em Hamiltonian}.
+
+\begin{theorem}
+Only one-dimensional boards can be Hamiltonian.
+\end{theorem}
+
+\begin{proof}
+Consider a $2 \times 2$ square on an $m \times n$ board with $m,n \geq 2$.
+There are a total of 10 positions with all points
+outside the square being black, and having in the square
+either two opposite black stones
+or two adjacent black stones and one white stone.
+Yet there are only a total of 8 positions where they can move to, namely
+4 positions with every point except one in the square being black,
+plus the 4 positions with only two adjacent white stones in the square.
+\end{proof}
+
+The question remains which one-dimensional boards are hamiltonian.
+This means that the graph $G(1,n)$ must have a directed
+Hamiltonian path starting at the empty position. While
+$G(1,1)$ trivially satisfies this, the graph $G(1,2)$
+in Figure~\ref{G21} does not, since removing the starting node
+disconnects it.
+
+One sufficient condition for such a path is
+for the graph minus the empty node to have a directed Hamiltonian
+cycle, since we can break the cycle at any 1-stone position and insert
+the empty node there. An even stronger condition is to have each
+position opposite its reversed color version on the cycle. It turns
+out that all cycles on $G(1,3)$ and $G(1,4)$ are of this form;
+it suffices to show only half of the cycle, from which the other half
+can be obtained by reversing colors:
+\begin{verbatim} 
+O..  O.O  .X.  XX.  ..O  X.O  .OO
+
+O...  O..O  O.X.  .XX.  XXX.  ...O  X..O  X.X.  X.XX  .O..
+.O.X  OO.X  ..XX  O.XX  OO..  OO.O  ..X.  .OX.  .O.O  .OOO
+\end{verbatim} 
+
+For larger graphs it becomes impossible to find such cycles manually,
+and one has to turn to tools such as Concorde~\cite{concorde},
+%available online~\cite{neos-concorde}
+for solving Traveling Salesman Problems.
+
+Here's how we translate our directed color symmetric cycle problem into
+an undirected TSP. For each non-empty node $v \in G(m,n)$ whose
+leftmost stone is white, we create the the 4 nodes and 4 edges shown in
+Figure~\ref{gadget}. Then, for every move $(u,v)$ where $u$'s leftmost
+stone is white, we create edges $\{u_{0}^{\mbox{out}},v_{0}^{\mbox{in}}\}$
+and $\{u_{1}^{\mbox{out}},v_{1}^{\mbox{in}}\}$ if $v$'s leftmost
+stone is white, or edges $\{u_{0}^{\mbox{out}},w_{1}^{\mbox{in}}\}$
+and $\{u_{1}^{\mbox{out}},w_{0}^{\mbox{in}}\}$ if $v$'s leftmost
+stone is black and $w$ is its color reversed version.
+All these intra-gadget edges have cost 2.
+Finally, we cross the pair of $1$-edges in one gadget. Call the resulting
+weighted undirected graph on $4(L(m,n)-1)/2$ nodes $T(m,n)$.
+
+\begin{figure}
+\begin{center}
+\epsfxsize=4cm \epsfbox{gadget.eps}
+\end{center}
+\caption{A gadget.}
+\label{gadget}
+\end{figure}
+
+\begin{lemma}
+$G(m,n)$ minus the empty node has a color symmetric cycle if and only if
+$T(m,n)$ has a cycle of cost $3(L(m,n)-1)/2$.
+\end{lemma}
+
+\begin{proof}
+Each half of a color symmetric cycle in $G(m,n)$ corresponds
+to a cycle in $T(m,n)$
+in which each inter-gadget $2$-edge is followed by
+the top $0$-edge, a vertical $1-$ edge, and finally the bottom $0$ edge.
+The crossed pair of $1$-edges ensures proper completion of the cycle.
+The total cost of this cycle is $2+0+1+0=3$ per gadget as claimed.
+If we attribute to each gadget half the cost of all adjacent traversed
+$2$-edges plus the cost of its traversed $1$-edges, then we see that
+only the above traversal achieves a cost of $3$. Thus a cycle of cost
+$3(L(m,n)-1)/2$ traverses each gadget exactly once, in an order
+which yields a color symmetric cycle in $G(m,n)$.
+\end{proof}
+
+Using this lemma, we found the following 1x5 cycle:
+\begin{verbatim} 
+O....  O...O  .X..O  .XO.O  O.O.O  O.OOO  .X...  .X.O.  XX.O.
+..OO.  O.OO.  .XOO.  .X..X  XX..X  ..O.X  O.O.X  .XO.X  .X.XX
+XX.XX  ..O..  .XO..  O.O..  O.OX.  .X.X.  XX.X.  ..OX.  X.OX.
+.OOX.  X..X.  X..XX  X.O..  X.O.X  .OO.X  OOO.X  ...XX  .O.XX
+.OO..  OOO..  OOOO.  ....X  O...X  O..XX  OO.XX  ..XXX  O.XXX
+OO...  OO..X  ..X.X  O.X.X  .XX.X  XXX.X  ...O.  X..O.  X.OO.
+.OOO.  .OOOO
+\end{verbatim} 
+as well as 1x6 and 1x7 symmetric cycles which are too long to show here.
+
+%\section{Number of Strings}
+%Another basic concept in Go that is of combinatorial interest is
+%the number of strings. While the number of stones in a legal $n \times n$
+%%position has a trivial maximum of $n^2-2$, the maximum number of strings
+%is not so easily determined.
+
+\section{Open problems}
+Computing $L(19,19)$, the number of
+legal positions on a standard size Go board,
+remains the main open problem.
+The algorithm we present should suffice to compute it
+within the next decade.
+Still, a more space efficient algorithm would be welcome.
+
+Theorem~\ref{asymptotic-formula} and its corollaries are contingent on
+Conjecture~\ref{conjecture}. Proving this would be important but might
+require a deep understanding of the structure of the border state
+graphs and their spectral properties.
+
+Game graphs are an interesting object of study for graph theorists.
+We conjecture that all $G(1,n)$ with $n>2$ have color symmetric cycles.
+
+Finally, a significant gap remains in the double exponent
+between the upper and lower bound on the number of games.
+
+\section{Acknowledgements}
+We are indebted to Martin M\"{u}ller for suggesting publication of
+these results,
+to Piet Hut for extensive commentary on preliminary versions,
+and especially to Michal Kouck\'{y} for the elegant idea of using
+Chinese Remaindering and extensive help with developing and
+running the file-based implementations that provided
+the counts for $n=14 \ldots 17$.
+
+\begin{thebibliography}{99}
+
+\bibitem{concretemath}
+R. L. Graham, D. E. Knuth and O. Patashnik,
+Concrete Mathematics, Addison-Wesley, 2nd Ed., 1994.
+
+\bibitem{gowiki}
+{\tt http://en.wikipedia.org/wiki/Go\_(board\_game)}
+
+\bibitem{gorules}
+{\tt http://www.cwi.nl/\~{ }tromp/go.html}
+
+\bibitem{concorde}
+{\tt http://www.tsp.gatech.edu/concorde.html}
+
+\bibitem{neos-concorde}
+{\tt http://www-neos.mcs.anl.gov/neos/solvers/co:concorde/TSP.html}
+
+\bibitem{W02} D. Wolfe,
+Go endgames are PSPACE-hard,
+in More Games of No Chance,
+MSRI Publications Volume 42, ed. R. J. Nowakowski, 2002, 125--136.
+
+\bibitem{LS80} D. Lichtenstein and M. Sipser,
+GO is Polynomial-Space Hard,
+Journal of the ACM,  Vol. {\bf 27}, No. 2, (April 1980) 393--401.
+
+\bibitem{C92} P. Chen, Heuristic Sampling: A Method for Predicting the Performance of Tree Searching Programs, SIAM J. Comput. 21(2), 1992, 295--315.
+
+\bibitem{R83} J. M. Robson, The Complexity of Go, Proc. IFIP
+(International Federation of Information Processing), 1983, 413--417.
+
+\bibitem{B83}
+R. E. Blahut, Theory and practice of error control codes, Addison-Wesley, 1983.
+
+\bibitem{GW}
+Gerhard Woeginger, personal communication.
+
+\bibitem{DG04}
+J. Dean and S. Ghemawat,
+MapReduce: Simplified Data Processing on Large Clusters,
+Proc. OSDI'04 (Sixth Symposium on Operating System Design and Implementation),
+2004, 137--150.
+
+\bibitem{CT00} M. Cr\^{a}\c{s}maru and J. Tromp,
+Ladders are PSPACE-complete,
+Proc. 2nd Int. Conf. Computers and Games, Springer-Verlag, 2000, 241--249
+
+\end{thebibliography}
+\end{document}
