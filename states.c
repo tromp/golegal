@@ -149,6 +149,27 @@ uint64_t encode(uint64_t t, int bump, bstate state)
   return t;
 }
 
+uint64_t reverse(uint64_t s)
+{
+  uint64_t s0, t,t1;
+  bstate state;
+  int i;
+
+  for (s0=s,t=0,i=statewidth; i--; s0>>=3) {
+    int pt = (s0 & 7);
+    if (pt==5 || pt==6)
+      pt = 5+6-pt;
+    t = t<<3 | pt;
+  }
+  if (ISNEEDY(t)) {
+    wordtostate(s, 0, state);
+    if (state[statewidth-1].color == BLACK)
+      t = flipstones(t);
+  } else if ((t1 = flipstones(t)) < t)
+    t = t1;
+  return t;
+}
+
 uint64_t decode(uint64_t s, int bump)
 {
   if (bump >= twothirdwidth)
