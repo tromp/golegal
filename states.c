@@ -164,7 +164,7 @@ uint64_t reverse(uint64_t s)
   if (ISNEEDY(t)) {
     wordtostate(s, 0, state);
     if (state[statewidth-1].color == BLACK)
-      t = flipstones(t);
+      t ^= (((~t) >> 2) & (t >> 1) & ALLONES);
   } else if ((t1 = flipstones(t)) < t)
     t = t1;
   return t;

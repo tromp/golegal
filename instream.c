@@ -236,7 +236,8 @@ int main(int argc, char *argv[])
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
     s = mb->state;
     r = reverse(s);
-    printf("%lo\n", r < s ? r : s);
+    // printf("%lo %lu %lo\n", s, mb->cnt, r);
+    printf("%lo\n", s < r ? s : r);
     deletemin(gin);
   }
   totin = totalread(gin);
