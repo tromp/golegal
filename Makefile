@@ -31,5 +31,5 @@ NIC:	NIC.hs
 clean: 
 	rm *.o start legal legalg NIC.hi
 
-tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
-	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
+tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile golegal modadd.c modadd.h CRT.hs NIC.hs README
+	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile golegal modadd.c modadd.h CRT.hs NIC.hs README

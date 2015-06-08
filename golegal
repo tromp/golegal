@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if (( $# < 2 ))
-then echo "usage: slegal width modulus [y [ x [incpus [memsize [height [ncpus]]]]]]"; exit
+then echo "usage: golegal width modulus [y [ x [incpus [memsize [height [ncpus]]]]]]"; exit
 fi
 
 width=$1
