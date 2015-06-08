@@ -1,6 +1,8 @@
 CFLAGS = -Wall -O3 -m64
 GFLAGS = -Wall -g -m64
 
+test:	start legal
+	./golegal 3 0 && ./gocheck 3 0
 
 all:   	start legal legalg tar NIC
 

@@ -35,7 +35,8 @@ my %cell;
 my ($width,$modidx, $pref) = @ARGV;
 if (defined $modidx) {
   $pref //= '';
-  @ARGV = glob("$width.$modidx/yx.$pref*/cpu.*")
+  @ARGV = glob("$width.$modidx/yx.$pref*/cpu.*");
+  die "No logs found in $width.$modidx" unless @ARGV;
 } else {
   while(<>) {
     last if ($width,$modidx) = /\/start (\d+) (\d+)$/;
