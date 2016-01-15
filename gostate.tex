@@ -30,7 +30,7 @@ the number of legal positions on an $m \times n$ board,
 and develop a dynamic programming algorithm which computes
 $L(m,n)$ in time $O(m^3 n^2 \lambda^m)$ and space $O(m \lambda^m)$,
 for some constant $\lambda < 5.4$.
-An implementation of this algorithm lets us list $L(n,n)$ for $n\leq 17$.
+An implementation of this algorithm lets us list $L(n,n)$ for $n\leq 18$.
 For bigger boards, we prove existence of a
 {\em base of liberties} $\lim_{m,n \rightarrow \infty} \sqrt[mn]{L(m,n)}$ of
 $2.9757341920433572493\ldots$.
@@ -64,10 +64,10 @@ This paper focuses instead on the {\em state complexity} of Go.
 We are motivated by the fact that
 the number of legal positions is a fundamental property of a game,
 the notion of legal position being unambigiously defined for Go
-despite many variances in rulesets, and that its computation turns
+despite many variations in rulesets, and that its computation turns
 out to be almost, but not quite, impossible. In particular, we
 demonstrate how computing the number of legal 19x19 positions,
-a number of 171 digits, will be feasible within a decade.
+a number of 171 digits, will be feasible by 2015.
 
 \section{Previous work}
 Results about the state complexity of Go have been mostly confined
