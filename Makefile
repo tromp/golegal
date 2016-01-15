@@ -1,14 +1,16 @@
 CFLAGS = -Wall -O3 -m64
 GFLAGS = -Wall -g -m64
 
+test:	start legal
+	./golegal 3 0 && ./gocheck 3 0
 
 all:   	start legal legalg tar NIC
 
 start:	start.c outstream.c modadd.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile
 	cc $(CFLAGS) -o start start.c states.c sortstate.c outstream.c partition.c modadd.c
 
-instream:	instream.c instream.h modadd.h modulus.h Makefile
-	cc -DMAININSTREAM $(CFLAGS) -o instream instream.c modadd.c
+instream:	instream.c instream.h modadd.h modulus.h states.h states.c Makefile
+	cc -DMAININSTREAM $(CFLAGS) -o instream instream.c modadd.c states.c
 
 outstream:	outstream.c sortstate.c sortstate.h partition.c partition.h modadd.h modulus.h Makefile
 	cc -DMAINOUTSTREAM $(CFLAGS) -o outstream outstream.c sortstate.c partition.c states.c modadd.c
@@ -31,5 +33,5 @@ NIC:	NIC.hs
 clean: 
 	rm *.o start legal legalg NIC.hi
 
-tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
-	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile slegal modadd.c modadd.h CRT.hs NIC.hs README
+tar:	start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile golegal modadd.c modadd.h CRT.hs NIC.hs README
+	tar -zcf legal.tgz start.c legal.c instream.c instream.h outstream.c outstream.h modulus.h partition.c partition.h states.c states.h sortstate.c sortstate.h Makefile golegal modadd.c modadd.h CRT.hs NIC.hs README

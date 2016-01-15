@@ -203,54 +203,41 @@ oldcont:
 
 #ifdef MAININSTREAM
 #include "modulus.h"
+#include "states.h"
 #include <string.h>
 
 int main(int argc, char *argv[])
 {
   int wd,modidx,y,x;
   uint64_t totin,nin;
-  uint64_t modulus;
+  uint64_t r, s, modulus;
   char inbase[64];
   statebuf *mb;
   goin *gin;
   int incpus, ncpus, cpuid;
 
-  if (argc!=8) {
-    fprintf(stderr, "usage: %s width imod y x incpus ncpus cpuid\n", argv[0]);
+  if (argc!=3) {
+    fprintf(stderr, "usage: %s width y\n", argv[0]);
     exit(1);
   }
-  wd = atoi(argv[1]);
-  modidx = atoi(argv[2]);
-  if (modidx < 0 || modidx >= NMODULI) {
-    fprintf (stderr, "modulo_index %d not in range [0,%d)\n", modidx, NMODULI);
-    exit(1);
-  }
+  setwidth(wd = atoi(argv[1]));
+  modidx = 0;
   modulus = -(uint64_t)modulusdeltas[modidx];
-  y = atoi(argv[3]);
-  x = atoi(argv[4]);
-  incpus = atoi(argv[5]);
-  ncpus = atoi(argv[6]);
-  if (ncpus < 1 || ncpus > MAXCPUS) {
-    fprintf (stderr, "#cpus %d not in range [0,%d]\n", ncpus, MAXCPUS);
-    exit(1);
-  }
-  cpuid = atoi(argv[7]);
-  if (cpuid < 0 || cpuid >= ncpus) {
-    fprintf (stderr, "cpuid %d not in range [0,%d]\n", ncpus, ncpus-1);
-    exit(1);
-  }
-
+  y = atoi(argv[2]);
+  x = 0;
+  incpus = 1;
+  ncpus = 1;
+  cpuid = 0;
   sprintf(inbase,"%d.%d/yx.%02d.%02d",wd,modidx,y,x);
   gin = openstreams(inbase, incpus, ncpus, cpuid, modulus, 0);
 
   if (!nstreams(gin))
     fprintf (stderr, "wanring: no input files\n");
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
-    // if (fwrite(&mb->state, sizeof(uint64_t),2,stdout) < 2) {
-    if (printf("%lo %llu\n",mb->state,mb->cnt) < 0) {
-      printf("failed to write state+count\n");
-      exit(1);
-    }
+    s = mb->state;
+    r = reverse(s);
+    // printf("%lo %lu %lo\n", s, mb->cnt, r);
+    printf("%lo\n", s < r ? s : r);
     deletemin(gin);
   }
   totin = totalread(gin);

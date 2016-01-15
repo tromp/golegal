@@ -10,6 +10,9 @@ void setwidth(int statewidth);
 // so it can be called multiple times in printf
 char *showstate(uint64_t s, int x);
 
+// return left-to-right reverse of state s
+uint64_t reverse(uint64_t s);
+
 // return whether s encodes a legal final state or not
 int finalstate(uint64_t s);
 
