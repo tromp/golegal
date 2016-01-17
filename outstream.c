@@ -45,7 +45,7 @@ void setpartition(goout *go)
   tot = bordercnt(go->width,go->bump);
   dmin = go->width*2/3;
   part = tot/go->ncpus;
-  printf("width=%d bump=%d tot=%ld part=%ld\n", go->width,go->bump,tot,part);
+  printf("width=%d bump=%d tot=%jd part=%jd\n", go->width,go->bump,(uintmax_t)tot,(uintmax_t)part);
   for (i=1; i<go->ncpus; i++) {
     go->parts[i-1] = 0;
     lim = tot * i/go->ncpus; // find (roughly) border-class of rank lim
@@ -55,7 +55,7 @@ void setpartition(goout *go)
       for (t=0; t<8; t++) {
         setborder(go->bump,d,t);
         size = bordercnt(go->width,go->bump);
-        // printf("d=%d t=%d size=%ld cum=%ld lim=%ld\n", d,t,size,cum,lim);
+        // printf("d=%d t=%d size=%jd cum=%jd lim=%jd\n", d,t,(uintmax_t)size,(uintmax_t)cum,(uintmax_t)lim);
         if (cum+size > lim)
           break;
         cum += size;
@@ -65,9 +65,9 @@ void setpartition(goout *go)
         cum += size;
         go->parts[i-1] += 1LL << (3*d);
       }
-      // printf("  parts[%d]=%lld\n", i-1, go->parts[i-1]);
+      // printf("  parts[%d]=%jd\n", i-1, (uintmax_t)(go->parts[i-1]));
     }
-    // printf("parts[%d]=%lo, off by %ld\n", i-1, go->parts[i-1], cum-lim);
+    // printf("parts[%d]=%jo, off by %jd\n", i-1, (uintmax_t)(go->parts[i-1]), (uintmax_t)(cum-lim));
   }
 }
 
@@ -174,7 +174,7 @@ void dumpstates(goout *go, jtset *jts, int iteration, uint64_t state)
   uint64_t prevstate;
   int i;
 
-  sprintf(formatname,"%s/fromto.%d.%%d/%d.%lo", go->outbase, go->cpuid, iteration, state);
+  sprintf(formatname,"%s/fromto.%d.%%d/%d.%jo", go->outbase, go->cpuid, iteration, (uintmax_t)state);
   jtstartfor(jts, 3*go->width);
   sc = jtnext(jts);
   prevstate = 0;
@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
   if (c == 'g' || c == 'G')
     msize *= 1000000000LL;
   if (msize < 100000LL) {
-    printf("memsize %lld too small for comfort.\n", msize);
+    printf("memsize %jd too small for comfort.\n", (uintmax_t)msize);
     exit(1);
   }
 
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
   jtfree(jts);
 
   if (nextx==0)
-    printf("legal(%dx%d) %% %llu = %llu\n",y+1,width,modulus,legalwritten(go));
+    printf("legal(%dx%d) %% %ju = %ju\n",y+1,width,(uintmax_t)modulus,(uintmax_t)legalwritten(go));
   return 0;
 }
 #endif

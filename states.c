@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
       continue;
     n++;
   }
-  printf("n=%ld\n", n);
+  printf("n=%jd\n", (uintmax_t)n);
   return 0;
 }
 #endif

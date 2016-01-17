@@ -55,7 +55,7 @@ void fillbuf(goin *gin, statebuf *sb)
     delta = readdelta(sb);
     sb->state += delta;
     if (!fread(&sb->cnt,sizeof(uint64_t),1,sb->fp)) {
-      printf("failed to read state %lo count from file %s\n", sb->state, sb->fname);
+      printf("failed to read state %jo count from file %s\n", (uintmax_t)sb->state, sb->fname);
       exit(1);
     }
     modadd(gin->modulus, &sb->cumcnt, sb->cnt);
@@ -67,7 +67,7 @@ void fillbuf(goin *gin, statebuf *sb)
       }
       sb->fp = NULL;
       if (sb->cumcnt) {
-        printf("file %s corrupt; cumcnt=%lu\n", sb->fname, sb->cumcnt);
+        printf("file %s corrupt; cumcnt=%ju\n", sb->fname, (uintmax_t)sb->cumcnt);
         exit(1);
       }
       return;
@@ -183,7 +183,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
           exit(1);
         }
         if (state <= prevstate) {
-          printf ("States %lo %lo out of order.\n", prevstate, state);
+          printf ("States %jo %jo out of order.\n", (uintmax_t)prevstate, (uintmax_t)state);
           exit(1);
         }
         prevstate = state;
@@ -192,7 +192,7 @@ goin *openstreams(char *inbase, int incpus, int ncpus, int cpuid, uint64_t modul
 oldcont:
 #endif
         globfree(&stateglob);
-        // printf("opened %s state %lo\n", sb->fname, state);
+        // printf("opened %s state %jo\n", sb->fname, (uintmax_t)state);
         sb->fp = fp;
         hpinsert(gin, gin->nstreams++, sb++);
       }
@@ -236,12 +236,12 @@ int main(int argc, char *argv[])
   for (nin=0LL; (mb = minstream(gin))->state != FINALSTATE; nin++) {
     s = mb->state;
     r = reverse(s);
-    // printf("%lo %lu %lo\n", s, mb->cnt, r);
-    printf("%lo\n", s < r ? s : r);
+    // printf("%jo %ju %jo\n", (uintmax_t)s, (uintmax_t)mb->cnt, (uintmax_t)r);
+    printf("%jo\n", (uintmax_t)(s < r ? s : r));
     deletemin(gin);
   }
   totin = totalread(gin);
-  fprintf(stderr, "(%d,%d) size %llu",y,x,nin);
+  fprintf(stderr, "(%d,%d) size %ju",y,x,(uintmax_t)nin);
   fprintf(stderr, " avg %1.3lf\n", totin/(double)nin);
   return 0;
 }

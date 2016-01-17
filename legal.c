@@ -64,13 +64,13 @@ int main(int argc, char *argv[])
   if (c == 'g' || c == 'G')
     msize *= 1000000000LL;
   if (msize < 1000000LL) {
-    printf("memsize %ld too small for comfort.\n", msize);
+    printf("memsize %jd too small for comfort.\n", (intmax_t)msize);
     exit(1);
   }
   if (argc > 9) {
     assert(sscanf(argv[9],"%d.%lo", &noutfiles, &skipunder) == 2);
     noutfiles++;
-    printf("skipping %d output files and states up to %lo\n", noutfiles, skipunder);
+    printf("skipping %d output files and states up to %jo\n", noutfiles, (uintmax_t)skipunder);
     skipunder++;
   } else {
     noutfiles = 0;
@@ -86,11 +86,11 @@ int main(int argc, char *argv[])
   if (nstreams(gin)) {
     for (; (mb = minstream(gin))->state != FINALSTATE; nin++,deletemin(gin)) {
       sn.cnt = mb->cnt;
-      // printf("expanding %llo\n", mb->state);
+      // printf("expanding %jo\n", (uintmax_t)mb->state);
       nnew = expandstate(mb->state, x, newstates);
       for (i=0; i<nnew; i++) {
         sn.state = newstates[i];
-        //printf("inserting %llo\n", sn.state);
+        //printf("inserting %jo\n", (uintmax_t)sn.state);
         jtinsert(jts, &sn);
       }
       if (nnew < 3) // nnew == 2
@@ -102,14 +102,14 @@ int main(int argc, char *argv[])
   dumpstates(go, jts, noutfiles++, FINALSTATE);
   jtfree(jts);
 
-  printf("(%d,%d) size %lu xsize %lu mod ",y,x,nin,totalread(gin));
+  printf("(%d,%d) size %ju xsize %ju mod ",y,x,(uintmax_t)nin,(uintmax_t)totalread(gin));
   if (modulus)
-    printf("%lu",modulus);
+    printf("%ju",(uintmax_t)modulus);
   else printf("18446744073709551616");
 
-  printf("\nnewillegal %lu ",nnewillcnt);
-  printf(       "needy %lu ", needywritten(go));
-  printf(       "legal %lu ",legalwritten(go));
+  printf("\nnewillegal %ju ", (uintmax_t)nnewillcnt);
+  printf(       "needy %ju ", (uintmax_t)needywritten(go));
+  printf(       "legal %ju ", (uintmax_t)legalwritten(go));
   printf("at (%d,%d)\n",y+(nextx==0),nextx);
 
   assert(cpuid != 0 || skipunder != 0L || nin > 0); // crash if cpu0 processes no states

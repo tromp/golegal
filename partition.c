@@ -99,7 +99,7 @@ void setborder(int bump, int i, int type)
 int allowed(int i, uint64_t bs)
 {
   // if (i==0)
-  //  printf("allowed(%ld)=%d\n", bs&TYPEMASK, (allow[i]>>(bs&TYPEMASK)) & 1);
+  //  printf("allowed(%jd)=%d\n", (uintmax_t)(bs&TYPEMASK), (allow[i]>>(bs&TYPEMASK)) & 1);
   // assert((bs&TYPEMASK) < 4 || (bs&TYPEMASK) >= 8);
   return ((allow[i]>>(bs&TYPEMASK)) & 1) && !(bs >> (STIFT+borderlen-i));
 }
@@ -140,7 +140,7 @@ uint64_t bordercnt(int len, int bmp)
     jtstartfor(order,keybits);
     while ((sc = jtnext(order)) != NULL) {
       //assert(sc->state != 0LL);
-      //printf("%llx\n", sc->state);
+      //printf("%jx\n", (uintmax_t)sc->state);
       expandat(order, sc, i);
     }
   }
@@ -148,7 +148,7 @@ uint64_t bordercnt(int len, int bmp)
   jtstartfor(order,keybits);
   for (i=0; (sc = jtnext(order)) !=NULL; i++) {
     if (sc->state & (NDYBUMP|NORM)) {
-      // printf("%d: %lo %ld\n", i, sc->state, sc->cnt);
+      // printf("%d: %jo %jd\n", i, (uintmax_t)sc->state, (uintmax_t)sc->cnt);
       tot += sc->cnt;
     }
   }
@@ -170,6 +170,6 @@ int main(int argc, char *argv[])
 //  printf("n #borders #nbits\n");
   allowall();
   tot = bordercnt(borderlen, bump);
-  printf("%llu\n", tot);
+  printf("%ju\n", (uintmax_t)tot);
 }
 #endif

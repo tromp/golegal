@@ -139,7 +139,7 @@ statecnt *jtinsertat(jtset *jts, statecnt *sb, locator *loc)
   stateblock *fb;
   statecnt *ret;
 
-//printf("%lx.insertat(%llo,%o)\n", jts, sb->state, (int)(loc-jts->insert));
+//printf("%lx.insertat(%jo,%o)\n", jts, (uintmax_t)sb->state, (int)(loc-jts->insert));
   if ((i=loc->npairs)==NPAIRS) {
 //printf("nusedblocks = %d\n", jts->nusedblocks);
     fb = &jts->blocks[free = getblock(jts)];
@@ -236,7 +236,7 @@ statecnt *jtnext1(jtset *jts)
 
 //printf("%lx.jtnext1()\n", jts);
   if (jts->nextpair < jts->lastpair) {
-//printf("%lx.jtnext1()a==%llo\n", jts,jts->nextpair->state);
+//printf("%lx.jtnext1()a==%jo\n", jts,(uintmax_t)jts->nextpair->state);
     return jts->nextpair++;
   }
   next = (block = jts->nextblock)->previous;
@@ -245,7 +245,7 @@ statecnt *jtnext1(jtset *jts)
     jts->nextblock = block = &jts->blocks[next];
     jts->lastpair = (jts->nextpair = block->pairs) +
       (block->previous!=NILBLOCK ? NPAIRS : jts->nextloc->npairs);
-//printf("%lx.jtnext1()b==%llo\n", jts,jts->nextpair->state);
+//printf("%lx.jtnext1()b==%jo\n", jts,(uintmax_t)jts->nextpair->state);
     return jts->nextpair++;
   }
   bin = jts->nextloc;
@@ -254,7 +254,7 @@ statecnt *jtnext1(jtset *jts)
     if (bin->last != NILBLOCK) {
       assert(bin->npairs > 0);
       jtstartforat(jts, bin);
-//printf("%lx.jtnext1()c==%llo\n", jts,jts->nextpair->state);
+//printf("%lx.jtnext1()c==%jo\n", jts,(uintmax_t)jts->nextpair->state);
       return jts->nextpair++;
     }
 //printf("%lx.jtnext1()d==NULL\n", jts);
@@ -295,12 +295,12 @@ statecnt *jtnext(jtset *jts)
     ret = jts->prevpair;
     jts->prevpair = sb;
     assert(ret->state != 0LL);
-//printf("%lx.jtnext()=%llo\n", jts, ret->state);
+//printf("%lx.jtnext()=%jo\n", jts, (uintmax_t)ret->state);
     return ret;
   }
   ret = jts->prevpair;
   jts->prevpair = sb;
-//printf("%lx.jtnext()=%llo\n", jts, ret->state);
+//printf("%lx.jtnext()=%jo\n", jts, (uintmax_t)ret->state);
   return ret;
 }
 
