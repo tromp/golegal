@@ -3,9 +3,9 @@ import Data.Array
 import Data.List
 import Data.Char
 import Numeric
-import Data.FixedPoint
+-- import Data.FixedPoint
 
-abls :: [(Int,FixedPoint10241024,FixedPoint10241024,FixedPoint10241024)]
+-- abls :: [(Int,FixedPoint10241024,FixedPoint10241024,FixedPoint10241024)]
 abls = abl 1 squarish where
   abl n (nn:nn1:abl1@(n1n1:_)) = (n,a,b,l) : abl (n+1) abl1 where
     l = fromIntegral nn * fromIntegral n1n1 / (fromIntegral nn1)^2
@@ -13,8 +13,8 @@ abls = abl 1 squarish where
     a = fromIntegral nn / (b^(2*n) * l^(n^2))
   abl _ _ = []
 
-main = do
-  mapM_ print abls
+main = print $ legal 19 19
+  -- mapM_ print abls
 
 alpha  = 0.8506399258457126148173084786343
 logalpha = logBase 10 alpha
