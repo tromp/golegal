@@ -16,13 +16,13 @@ abls = abl 1 squarish where
 main = print $ legal 19 19
   -- mapM_ print abls
 
-alpha  = 0.8506399258457126148173084786343
+alpha  = 0.8506399258457145
 logalpha = logBase 10 alpha
 
-beta   = 0.96553505933837393063017090430952
+beta   = 0.96553505933837387
 logbeta = logBase 10 beta
 
-lambda = 2.97573419204335724938110448420706
+lambda = 2.975734192043357249381
 loglambda = logBase 10 lambda
 
 legal m n = alpha * beta**(m+n) * lambda**(m*n)
