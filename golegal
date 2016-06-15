@@ -14,7 +14,7 @@ if (( $# >= 7 )); then height=$7; else height=$width; fi
 if (( $# >= 8 )); then  ncpus=$8; else ncpus=$incpus; fi
 
 obsolete=""
-bin="$HOME/golegal"
+bin="$(dirname "${BASH_SOURCE[0]}")"
 
 wm="$width.$modidx"
 pincpus=$incpus
@@ -49,10 +49,8 @@ while ((y < height)); do
   done
   wait
   date > "$nextyx/end"
-  echo chmod -R 555 $nextyx
-  chmod -R 555 $nextyx
 
-  if [[ $obsolete != "" ]]; then echo "rm -rf $obsolete/fromto.*"; chmod -R 755 $obsolete; rm -rf $obsolete/fromto.*; chmod 555 $obsolete; fi
+  if [[ $obsolete != "" ]]; then echo "rm -rf $obsolete/fromto.*"; rm -rf $obsolete/fromto.*; fi
   if (( x != 0 )); then obsolete=$yx; else obsolete=""; fi
   x=$nextx
   y=$nexty
