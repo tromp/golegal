@@ -14,7 +14,7 @@ if (( $# >= 7 )); then height=$7; else height=$width; fi
 if (( $# >= 8 )); then  ncpus=$8; else ncpus=$incpus; fi
 
 obsolete=""
-bin="$HOME/golegal"
+bin="$(dirname "${BASH_SOURCE[0]}")"
 
 wm="$width.$modidx"
 pincpus=$incpus
