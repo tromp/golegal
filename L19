@@ -8,6 +8,77 @@ main = do
   let i = read idx :: Int
   mapM_ (print . (`mod` moduli!!i)) l18
 
+<!--
+0	2^64	18446744073709551616	8090796072333351655
+1	2^64-3	18446744073709551613	2915461546443917794
+2	2^64-5	18446744073709551611	7586469474294957788
+3	2^64-7	18446744073709551609	6473614947737753186
+4	2^64-9	18446744073709551607	10169697560205166237
+5	2^64-11	18446744073709551605	8330618849129880355
+6	2^64-15	18446744073709551601	15770133769769565723
+11	2^64-45	18446744073709551571	18086767044943672066
+19	2^64-83	18446744073709551533	4954386835027564217
+
+ . . . . O O O . X X . . O . X X X . X
+ O X X O x O . . O X O X . . . O O . O
+ O X . . O X . X X X X X . X X X X X O
+ . . O O . X X . O . . X O X . O . X .
+ X . O . O . X O . X X O O X . . X O X
+ X . . . X X X O . O O . . . O . X O O
+ . . O X O . . O . . X X X . O . O . .
+ . . O O . O O O . . . O X . X . . . O
+ O X . . O . O O O O X . . O X X X O X
+ O . . X . O O X O X X O O . O . X O .
+ O X X X . . O X . . O O X O O O . X X
+ O O X O . X X X . O . X O . O O O . O
+ O . X . X O X X . X X . O X O . . O X
+ O . . . X O O X X O . O O . . X . X .
+ X X O O . . X O O . O . O . X O O X .
+ O . X . . X X . O X O X O X X . O O .
+ O O X X O . X . O . X O . O X O X . .
+ . . . X X O O X . O X . X . O X X O .
+ O O . O X . O O . . O X X X X X O O O
+
+ O O O O X X X O . . O O X O . . . O .
+ X . . X . X O O X . X . O O O X X O X
+ X . O O X . O . . . . . O . . . . . X
+ O O x x O . . O X O O . X . O X O . O
+ . O x O X O . X O . . X X . O O . X .
+ . O O O . . . X O X X O O O X O . X X
+ O O X . X O O X O O . . . O X O X O O
+ O O X X o X X X O O O X . O . O O O X
+ X . O O x o X X X X . O O X . . . X .
+ X O O . O X X . X . . X X O X O . X O
+ X . . . O O X . O O X X . X X X O . .
+ X X . X O . . . O X O . X O X X X O X
+ X O . O . X . . O . . O X . X O O X .
+ X O O O . X X . . X O X X O O . O . O
+ . . X X O O . X X O X O X O . X X . O
+ X O . O O . . O X . X . X . . O X X O
+ X X . . X O . O X O . X O X . X . O O
+ O O O . . X X . O X . O . O X . . X O
+ x x O X . O X X O O X . . . . . X X X
+
+ X X X X . . . X O O X X . X O O O X O
+ . O O . O . X X . O . O X X X . . X .
+ . O X X . O X O O O O O X O O O O O .
+ X X . . X O O X . X X O . O X . X O X
+ o X . X . X O . X O O . . O X X O . O
+ o X X X O O O . X . . X X X . X O . .
+ X X . O . X X . X X O O O X . X . X X
+ X X . . X . . . X X X . O X O X X X .
+ . O X X . X . . . . O X X . O O O . O
+ . X X O X . . O . O O . . X . X O . X
+ . O O O X X . O X X . . O . . . X O O
+ . . O . X O O O X . X O . X . . . X .
+ . X O X O . O O X O O X . O . X X . O
+ . X X X O . . O O . X . . X X O X O X
+ O O . . X X O . . X . X . X O . . O X
+ . X O X X O O X . O . O . O O X . . X
+ . . O O . X O X . X O . X . O . O X X
+ X X X O O . . O X . O X O X . O O . X
+ . . X . O X . . X X . O O O O O . . .
+
 (19,00) legal 8090796072333351655 diff ?
 (20,00) legal 2287365897119014653 diff ?
 0: L(19,19) mod 18446744073709551616 =  8090796072333351655
@@ -48,3 +119,4 @@ main = do
 
 6: L(19,19) mod 18446744073709551601 =  15770133769769565723
 6: L(19,20) mod 18446744073709551601 =   4187295581145607589
+-->
